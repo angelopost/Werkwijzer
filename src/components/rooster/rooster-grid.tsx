@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ContractTypeBadge } from "@/components/ui/contract-type-badge";
 import { ShiftDialog } from "./shift-dialog";
+import { LeaveDialog } from "./leave-dialog";
 import type { LeavePeriod, ShiftItem, StaffRow } from "./types";
 
 const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
@@ -36,6 +37,7 @@ export function RoosterGrid({
   const [selection, setSelection] = useState<{ staffId: string; dateKey: string; shift: ShiftItem | null } | null>(
     null
   );
+  const [selectedLeave, setSelectedLeave] = useState<LeavePeriod | null>(null);
 
   const shiftsByCell = useMemo(() => {
     const map = new Map<string, ShiftItem[]>();
@@ -107,12 +109,14 @@ export function RoosterGrid({
                     className={cn("min-h-16 border-r p-1.5 align-top last:border-r-0", today && "bg-accent/15")}
                   >
                     {leave && (
-                      <div
-                        className="mb-1 rounded-lg px-2 py-1.5 text-xs font-medium text-white shadow-sm"
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLeave(leave)}
+                        className="mb-1 w-full rounded-lg px-2 py-1.5 text-left text-xs font-medium text-white shadow-sm transition-transform hover:-translate-y-px"
                         style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
                       >
                         {LEAVE_LABEL[leave.type]}
-                      </div>
+                      </button>
                     )}
                     <button
                       type="button"
@@ -156,6 +160,15 @@ export function RoosterGrid({
           dateKey={selection.dateKey}
           dateLabel={formatDayLabel(parseDateKey(selection.dateKey))}
           shift={selection.shift}
+        />
+      )}
+
+      {selectedLeave && (
+        <LeaveDialog
+          open
+          onOpenChange={(open) => !open && setSelectedLeave(null)}
+          staffName={staff.find((s) => s.id === selectedLeave.userId)?.name ?? ""}
+          leave={selectedLeave}
         />
       )}
     </div>

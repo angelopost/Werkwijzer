@@ -62,10 +62,12 @@ export default async function RoosterPage({
           assignedUserId: s.assignedUserId,
         }))}
         leavePeriods={leaveRequests.map((l) => ({
+          id: l.id,
           userId: l.userId,
           type: l.type,
           startDate: toDateKey(l.startDate),
           endDate: toDateKey(l.endDate),
+          reason: l.reason,
         }))}
       />
     </div>

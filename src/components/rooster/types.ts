@@ -16,8 +16,10 @@ export type ShiftItem = {
 };
 
 export type LeavePeriod = {
+  id: string;
   userId: string;
   type: "VERLOF" | "ZIEK";
   startDate: string;
   endDate: string;
+  reason: string | null;
 };
