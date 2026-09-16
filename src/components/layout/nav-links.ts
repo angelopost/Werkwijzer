@@ -4,6 +4,7 @@ export const ADMIN_NAV: NavLink[] = [
   { href: "/rooster", label: "Rooster" },
   { href: "/goedkeuringen", label: "Goedkeuringen" },
   { href: "/medewerkers", label: "Medewerkers" },
+  { href: "/uren", label: "Uren" },
 ];
 
 export const STAFF_NAV: NavLink[] = [
