@@ -53,6 +53,7 @@ export default async function RoosterPage({
           id: s.id,
           name: s.name,
           functieIds: s.functies.map((f) => f.functieId),
+          contractType: s.contractType,
         }))}
         functies={functies}
         shifts={shifts.map((s) => ({

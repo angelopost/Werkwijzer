@@ -14,6 +14,7 @@ import {
 } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { ContractTypeBadge } from "@/components/ui/contract-type-badge";
 import { ShiftDialog } from "./shift-dialog";
 import type { AvailabilityEntry, FunctieOption, LeavePeriod, ShiftItem, StaffRow } from "./types";
 
@@ -101,7 +102,10 @@ export function RoosterGrid({
               <td className="border-r p-3 align-top">
                 <div className="flex items-center gap-2.5">
                   <UserAvatar name={member.name} />
-                  <span className="font-medium">{member.name}</span>
+                  <div className="flex min-w-0 flex-col gap-0.5">
+                    <span className="truncate font-medium">{member.name}</span>
+                    <ContractTypeBadge contractType={member.contractType ?? null} />
+                  </div>
                 </div>
               </td>
               {days.map((day) => {
