@@ -27,15 +27,17 @@ export function Sidebar({
   links,
   userName,
   roleLabel,
+  className,
 }: {
   links: NavLink[];
   userName: string;
   roleLabel: string;
+  className?: string;
 }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-64 shrink-0 flex-col bg-sidebar">
+    <aside className={cn("hidden w-64 shrink-0 flex-col bg-sidebar md:flex", className)}>
       <div className="flex h-16 items-center gap-2 px-5">
         <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <CalendarRange className="size-4.5" />
