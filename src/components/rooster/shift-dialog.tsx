@@ -178,9 +178,9 @@ export function ShiftDialog({
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
-          <DialogFooter className="gap-2 sm:justify-between">
-            {shift ? (
-              <div className="flex gap-2">
+          <DialogFooter className="flex-col sm:flex-col items-stretch gap-2">
+            {shift && (
+              <div className="flex flex-wrap gap-2">
                 <Button type="button" variant="outline" onClick={handleDelete} className="text-destructive">
                   Verwijderen
                 </Button>
@@ -191,14 +191,12 @@ export function ShiftDialog({
                     onClick={() => setConfirmBulkDelete(true)}
                     className="text-destructive"
                   >
-                    Alle vaste diensten verwijderen
+                    Alle diensten verwijderen
                   </Button>
                 )}
               </div>
-            ) : (
-              <span />
             )}
-            <Button type="submit" disabled={pending}>
+            <Button type="submit" disabled={pending} className="self-end">
               {pending ? "Opslaan…" : "Opslaan"}
             </Button>
           </DialogFooter>
