@@ -18,7 +18,7 @@ export default async function MijnRoosterPage({
   const [staff, shifts, leaveRequests] = await Promise.all([
     prisma.user.findMany({
       where: { role: "STAFF", isActive: true },
-      orderBy: { name: "asc" },
+      orderBy: [{ contractType: "asc" }, { name: "asc" }],
     }),
     prisma.shift.findMany({
       where: { date: { gte: from, lte: to }, status: "PUBLISHED" },
