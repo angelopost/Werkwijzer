@@ -5,11 +5,6 @@ export const staffFormSchema = z.object({
   email: z.email({ error: "Ongeldig e-mailadres" }),
   contractHoursPerWeek: z.coerce.number().min(0).max(60).optional(),
   contractType: z.enum(["VAST", "NUL_UREN"]).optional(),
-  functieIds: z
-    .union([z.string(), z.array(z.string())])
-    .transform((v) => (Array.isArray(v) ? v : [v]))
-    .optional()
-    .default([]),
 });
 
 export type StaffFormValues = z.infer<typeof staffFormSchema>;

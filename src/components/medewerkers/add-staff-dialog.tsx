@@ -22,7 +22,7 @@ import {
 import { createStaffMember, type StaffActionState } from "@/app/(admin)/medewerkers/actions";
 import { InviteLinkBanner } from "./invite-link-banner";
 
-export function AddStaffDialog({ functies }: { functies: { id: string; name: string }[] }) {
+export function AddStaffDialog() {
   const [open, setOpen] = useState(false);
   const [invitePath, setInvitePath] = useState<string | null>(null);
   const [state, action, pending] = useActionState<StaffActionState, FormData>(
@@ -80,20 +80,6 @@ export function AddStaffDialog({ functies }: { functies: { id: string; name: str
                   <SelectItem value="NUL_UREN">Nul uren contract</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label>Functie(s)</Label>
-              <div className="flex flex-col gap-1.5">
-                {functies.map((f) => (
-                  <label key={f.id} className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" name="functieIds" value={f.id} className="size-4" />
-                    {f.name}
-                  </label>
-                ))}
-                {functies.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Nog geen functies aangemaakt.</p>
-                )}
-              </div>
             </div>
 
             {state?.error && <p className="text-sm text-destructive">{state.error}</p>}

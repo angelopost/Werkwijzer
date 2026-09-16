@@ -25,7 +25,6 @@ export async function saveShift(_prevState: ActionState, formData: FormData): Pr
     breakMinutes: data.breakMinutes,
     notes: data.notes || null,
     assignedUserId: data.assignedUserId,
-    functieId: data.functieId,
   };
 
   if (typeof shiftId === "string" && shiftId) {

@@ -11,7 +11,7 @@ export default async function GoedkeuringenPage() {
   const [swaps, leaveRequests] = await Promise.all([
     prisma.shiftSwapRequest.findMany({
       where: { status: "PENDING" },
-      include: { shift: { include: { functie: true } }, requestingUser: true, targetUser: true },
+      include: { shift: true, requestingUser: true, targetUser: true },
       orderBy: { createdAt: "asc" },
     }),
     prisma.leaveRequest.findMany({
@@ -44,7 +44,7 @@ export default async function GoedkeuringenPage() {
                     </p>
                     <p className="text-sm text-muted-foreground capitalize">
                       {formatDayLabel(swap.shift.date)}, {formatTime(swap.shift.startTime)} -{" "}
-                      {formatTime(swap.shift.endTime)} · {swap.shift.functie?.name}
+                      {formatTime(swap.shift.endTime)}
                     </p>
                   </div>
                   <ApprovalButtons

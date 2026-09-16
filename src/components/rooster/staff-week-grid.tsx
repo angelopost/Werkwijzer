@@ -92,13 +92,11 @@ export function StaffWeekGrid({
                       {cellShifts.map((shift) => (
                         <div
                           key={shift.id}
-                          className="w-full rounded-lg px-2.5 py-1.5 text-white shadow-sm"
-                          style={{ backgroundColor: shift.functieColor ?? "#64748b" }}
+                          className="w-full rounded-lg bg-primary px-2.5 py-1.5 text-primary-foreground shadow-sm"
                         >
                           <div className="text-xs font-semibold">
                             {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
                           </div>
-                          <div className="text-xs opacity-90">{shift.functieName}</div>
                         </div>
                       ))}
                     </div>

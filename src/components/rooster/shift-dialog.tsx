@@ -12,16 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { saveShift, deleteShift, type ActionState } from "@/app/(admin)/rooster/actions";
 import { formatTime } from "@/lib/dates";
-import type { FunctieOption, ShiftItem } from "./types";
+import type { ShiftItem } from "./types";
 
 export function ShiftDialog({
   open,
@@ -30,7 +23,6 @@ export function ShiftDialog({
   staffName,
   dateKey,
   dateLabel,
-  functies,
   shift,
 }: {
   open: boolean;
@@ -39,7 +31,6 @@ export function ShiftDialog({
   staffName: string;
   dateKey: string;
   dateLabel: string;
-  functies: FunctieOption[];
   shift: ShiftItem | null;
 }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(saveShift, undefined);
@@ -71,24 +62,6 @@ export function ShiftDialog({
           <input type="hidden" name="date" value={dateKey} />
 
           <p className="text-sm text-muted-foreground">{dateLabel}</p>
-
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="functieId">Functie</Label>
-            <Select name="functieId" defaultValue={shift?.functieId ?? undefined}>
-              <SelectTrigger id="functieId">
-                <SelectValue placeholder="Kies een functie">
-                  {(value: string | null) => functies.find((f) => f.id === value)?.name ?? "Kies een functie"}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {functies.map((f) => (
-                  <SelectItem key={f.id} value={f.id}>
-                    {f.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">

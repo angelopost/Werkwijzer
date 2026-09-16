@@ -22,7 +22,6 @@ export default async function MijnRoosterPage({
     }),
     prisma.shift.findMany({
       where: { date: { gte: from, lte: to }, status: "PUBLISHED" },
-      include: { functie: true },
     }),
     prisma.leaveRequest.findMany({
       where: { status: "APPROVED", startDate: { lte: to }, endDate: { gte: from } },
@@ -35,7 +34,7 @@ export default async function MijnRoosterPage({
 
       <StaffWeekGrid
         weekStartKey={weekStartKey}
-        staff={staff.map((s) => ({ id: s.id, name: s.name, functieIds: [] }))}
+        staff={staff.map((s) => ({ id: s.id, name: s.name }))}
         shifts={shifts.map((s) => ({
           id: s.id,
           date: toDateKey(s.date),
@@ -45,9 +44,6 @@ export default async function MijnRoosterPage({
           notes: s.notes,
           status: s.status,
           assignedUserId: s.assignedUserId,
-          functieId: s.functieId,
-          functieName: s.functie?.name ?? null,
-          functieColor: s.functie?.color ?? null,
         }))}
         leavePeriods={leaveRequests.map((l) => ({
           userId: l.userId,

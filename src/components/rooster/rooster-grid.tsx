@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ContractTypeBadge } from "@/components/ui/contract-type-badge";
 import { ShiftDialog } from "./shift-dialog";
-import type { AvailabilityEntry, FunctieOption, LeavePeriod, ShiftItem, StaffRow } from "./types";
+import type { AvailabilityEntry, LeavePeriod, ShiftItem, StaffRow } from "./types";
 
 const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
 const LEAVE_COLOR: Record<LeavePeriod["type"], string> = { VERLOF: "#d97706", ZIEK: "#ea580c" };
@@ -24,14 +24,12 @@ const LEAVE_COLOR: Record<LeavePeriod["type"], string> = { VERLOF: "#d97706", ZI
 export function RoosterGrid({
   weekStartKey,
   staff,
-  functies,
   shifts,
   leavePeriods = [],
   availability = [],
 }: {
   weekStartKey: string;
   staff: StaffRow[];
-  functies: FunctieOption[];
   shifts: ShiftItem[];
   leavePeriods?: LeavePeriod[];
   availability?: AvailabilityEntry[];
@@ -150,19 +148,15 @@ export function RoosterGrid({
                           key={shift.id}
                           type="button"
                           onClick={() => setSelection({ staffId: member.id, dateKey, shift })}
-                          className="w-full rounded-lg px-2.5 py-1.5 text-left text-white shadow-sm transition-transform hover:-translate-y-px"
-                          style={{
-                            backgroundColor: shift.functieColor ?? "#64748b",
-                            opacity: shift.status === "DRAFT" ? 0.55 : 1,
-                          }}
+                          className={cn(
+                            "w-full rounded-lg bg-primary px-2.5 py-1.5 text-left text-primary-foreground shadow-sm transition-transform hover:-translate-y-px",
+                            shift.status === "DRAFT" && "opacity-55"
+                          )}
                         >
                           <div className="text-xs font-semibold">
                             {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
                           </div>
-                          <div className="text-xs opacity-90">
-                            {shift.functieName}
-                            {shift.status === "DRAFT" && " · concept"}
-                          </div>
+                          {shift.status === "DRAFT" && <div className="text-xs opacity-90">Concept</div>}
                         </button>
                       ))}
                     </div>
@@ -182,7 +176,6 @@ export function RoosterGrid({
           staffName={selectedStaff.name}
           dateKey={selection.dateKey}
           dateLabel={formatDayLabel(parseDateKey(selection.dateKey))}
-          functies={functies}
           shift={selection.shift}
         />
       )}

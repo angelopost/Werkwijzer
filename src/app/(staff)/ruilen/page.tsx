@@ -23,7 +23,6 @@ export default async function RuilenPage() {
   const [upcomingShifts, colleagues, myRequests] = await Promise.all([
     prisma.shift.findMany({
       where: { assignedUserId: userId, status: "PUBLISHED", date: { gte: today } },
-      include: { functie: true },
       orderBy: { date: "asc" },
     }),
     prisma.user.findMany({
@@ -32,7 +31,7 @@ export default async function RuilenPage() {
     }),
     prisma.shiftSwapRequest.findMany({
       where: { requestingUserId: userId },
-      include: { shift: { include: { functie: true } }, targetUser: true },
+      include: { shift: true, targetUser: true },
       orderBy: { createdAt: "desc" },
     }),
   ]);
@@ -55,7 +54,7 @@ export default async function RuilenPage() {
                 <div>
                   <p className="font-medium capitalize">{formatDayLabel(shift.date)}</p>
                   <p className="text-sm text-muted-foreground">
-                    {formatTime(shift.startTime)} - {formatTime(shift.endTime)} · {shift.functie?.name}
+                    {formatTime(shift.startTime)} - {formatTime(shift.endTime)}
                   </p>
                 </div>
                 {requestedShiftIds.has(shift.id) ? (
@@ -85,8 +84,7 @@ export default async function RuilenPage() {
                 <div>
                   <p className="font-medium capitalize">{formatDayLabel(request.shift.date)}</p>
                   <p className="text-sm text-muted-foreground">
-                    {formatTime(request.shift.startTime)} - {formatTime(request.shift.endTime)} ·{" "}
-                    {request.shift.functie?.name}
+                    {formatTime(request.shift.startTime)} - {formatTime(request.shift.endTime)}
                     {request.targetUser && ` · voor ${request.targetUser.name}`}
                   </p>
                 </div>

@@ -23,7 +23,6 @@ type StaffRow = {
   isActive: boolean;
   contractHoursPerWeek: number | null;
   contractType: "VAST" | "NUL_UREN" | null;
-  functieNames: string[];
   hasAcceptedInvite: boolean;
 };
 
@@ -45,7 +44,6 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
             <TableRow>
               <TableHead>Naam</TableHead>
               <TableHead>E-mail</TableHead>
-              <TableHead>Functie(s)</TableHead>
               <TableHead>Contracturen</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Acties</TableHead>
@@ -62,7 +60,6 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{member.email}</TableCell>
-                <TableCell>{member.functieNames.join(", ") || "—"}</TableCell>
                 <TableCell>{member.contractHoursPerWeek ?? "—"}</TableCell>
                 <TableCell>
                   {!member.hasAcceptedInvite ? (
@@ -89,7 +86,7 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
             ))}
             {staff.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-muted-foreground">
+                <TableCell colSpan={5} className="text-center text-muted-foreground">
                   Nog geen medewerkers toegevoegd.
                 </TableCell>
               </TableRow>

@@ -1,9 +1,6 @@
-export type FunctieOption = { id: string; name: string; color: string };
-
 export type StaffRow = {
   id: string;
   name: string;
-  functieIds: string[];
   contractType?: "VAST" | "NUL_UREN" | null;
 };
 
@@ -16,9 +13,6 @@ export type ShiftItem = {
   notes: string | null;
   status: "DRAFT" | "PUBLISHED";
   assignedUserId: string | null;
-  functieId: string | null;
-  functieName: string | null;
-  functieColor: string | null;
 };
 
 export type LeavePeriod = {

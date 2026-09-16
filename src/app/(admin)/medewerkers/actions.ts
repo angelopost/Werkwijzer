@@ -21,7 +21,6 @@ export async function createStaffMember(
     email: formData.get("email"),
     contractHoursPerWeek: formData.get("contractHoursPerWeek") || undefined,
     contractType: formData.get("contractType") || undefined,
-    functieIds: formData.getAll("functieIds"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer" };
@@ -43,7 +42,6 @@ export async function createStaffMember(
       role: "STAFF",
       contractHoursPerWeek: data.contractHoursPerWeek ?? null,
       contractType: data.contractType ?? null,
-      functies: { create: data.functieIds.map((functieId) => ({ functieId })) },
       invite: { create: { token, expiresAt } },
     },
   });
