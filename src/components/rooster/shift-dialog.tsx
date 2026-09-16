@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { saveShift, deleteShift, type ActionState } from "@/app/(admin)/rooster/actions";
+import {
+  saveShift,
+  deleteShift,
+  deletePermanentShift,
+  type ActionState,
+} from "@/app/(admin)/rooster/actions";
 import { formatTime, getWeekdayFullLabel, parseDateKey } from "@/lib/dates";
 import type { ShiftItem } from "./types";
 
@@ -35,6 +40,9 @@ export function ShiftDialog({
   shift: ShiftItem | null;
 }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(saveShift, undefined);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [bulkDeleteChecked, setBulkDeleteChecked] = useState(false);
+  const [bulkDeletePending, setBulkDeletePending] = useState(false);
 
   useEffect(() => {
     if (state && !state.error) {
@@ -49,8 +57,58 @@ export function ShiftDialog({
     onOpenChange(false);
   }
 
+  async function handleDeleteAllPermanent() {
+    if (!shift?.permanentShiftId || !bulkDeleteChecked) return;
+    setBulkDeletePending(true);
+    await deletePermanentShift(shift.permanentShiftId);
+    onOpenChange(false);
+  }
+
   const weekdayLabel = getWeekdayFullLabel(parseDateKey(dateKey));
   const canMakePermanent = !shift || !shift.permanentShiftId;
+
+  if (shift?.permanentShiftId && confirmBulkDelete) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Alle vaste diensten verwijderen</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground">
+              Dit verwijdert alle nog komende {weekdayLabel}-diensten van {staffName} uit dit
+              vaste patroon. Andere dagen (bijvoorbeeld een andere weekdag) blijven gewoon
+              staan. Diensten die al zijn geweest blijven ook staan.
+            </p>
+            <label className="flex items-start gap-2.5 rounded-lg border p-3 text-sm">
+              <Checkbox
+                checked={bulkDeleteChecked}
+                onCheckedChange={(checked) => setBulkDeleteChecked(checked === true)}
+                className="mt-0.5"
+              />
+              <span>
+                Weet je zeker dat je alle {weekdayLabel}-diensten van {staffName} wilt
+                verwijderen? Dit kan je niet ongedaan maken.
+              </span>
+            </label>
+          </div>
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button type="button" variant="outline" onClick={() => setConfirmBulkDelete(false)}>
+              Annuleren
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={!bulkDeleteChecked || bulkDeletePending}
+              onClick={handleDeleteAllPermanent}
+            >
+              {bulkDeletePending ? "Verwijderen…" : "Verwijderen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -122,9 +180,21 @@ export function ShiftDialog({
 
           <DialogFooter className="gap-2 sm:justify-between">
             {shift ? (
-              <Button type="button" variant="outline" onClick={handleDelete} className="text-destructive">
-                Verwijderen
-              </Button>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={handleDelete} className="text-destructive">
+                  Verwijderen
+                </Button>
+                {shift.permanentShiftId && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setConfirmBulkDelete(true)}
+                    className="text-destructive"
+                  >
+                    Alle vaste diensten verwijderen
+                  </Button>
+                )}
+              </div>
             ) : (
               <span />
             )}

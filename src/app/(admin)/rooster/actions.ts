@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { combineDateAndTime, getWeekDays, getWeekdayIndex, parseDateKey } from "@/lib/dates";
+import { combineDateAndTime, getWeekDays, getWeekdayIndex, parseDateKey, toDateKey } from "@/lib/dates";
 import { createPermanentShift } from "@/lib/permanent-shifts";
 import { shiftFormSchema } from "@/lib/validation/shift";
 import { leaveFormSchema } from "@/lib/validation/leave";
@@ -66,6 +66,21 @@ export async function deleteShift(shiftId: string) {
       update: {},
     });
   }
+
+  revalidatePath("/rooster");
+  revalidatePath("/mijn-rooster");
+}
+
+/** Verwijdert een heel vast patroon (alleen nog komende diensten; voorbije diensten
+ * blijven staan voor het urenoverzicht) en zorgt dat er niets meer wordt bijgevuld. */
+export async function deletePermanentShift(permanentShiftId: string) {
+  await requireAdmin();
+  const today = parseDateKey(toDateKey(new Date()));
+
+  await prisma.shift.deleteMany({
+    where: { permanentShiftId, date: { gte: today } },
+  });
+  await prisma.permanentShift.delete({ where: { id: permanentShiftId } });
 
   revalidatePath("/rooster");
   revalidatePath("/mijn-rooster");
