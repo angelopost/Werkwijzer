@@ -15,3 +15,16 @@ export type ShiftItem = {
   functieName: string | null;
   functieColor: string | null;
 };
+
+export type LeavePeriod = {
+  userId: string;
+  type: "VERLOF" | "ZIEK";
+  startDate: string;
+  endDate: string;
+};
+
+export type AvailabilityEntry = {
+  userId: string;
+  date: string;
+  status: "AVAILABLE" | "UNAVAILABLE" | "PREFERRED";
+};

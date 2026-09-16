@@ -17,7 +17,7 @@ export default async function RoosterPage({
   const from = days[0];
   const to = days[6];
 
-  const [staff, functies, shifts] = await Promise.all([
+  const [staff, functies, shifts, leaveRequests, availability] = await Promise.all([
     prisma.user.findMany({
       where: { role: "STAFF", isActive: true },
       orderBy: { name: "asc" },
@@ -28,6 +28,10 @@ export default async function RoosterPage({
       where: { date: { gte: from, lte: to } },
       include: { functie: true, assignedUser: true },
     }),
+    prisma.leaveRequest.findMany({
+      where: { status: "APPROVED", startDate: { lte: to }, endDate: { gte: from } },
+    }),
+    prisma.availability.findMany({ where: { date: { gte: from, lte: to } } }),
   ]);
 
   const hasDraft = shifts.some((s) => s.status === "DRAFT");
@@ -86,6 +90,17 @@ export default async function RoosterPage({
           functieId: s.functieId,
           functieName: s.functie?.name ?? null,
           functieColor: s.functie?.color ?? null,
+        }))}
+        leavePeriods={leaveRequests.map((l) => ({
+          userId: l.userId,
+          type: l.type,
+          startDate: toDateKey(l.startDate),
+          endDate: toDateKey(l.endDate),
+        }))}
+        availability={availability.map((a) => ({
+          userId: a.userId,
+          date: toDateKey(a.date),
+          status: a.status,
         }))}
       />
     </div>

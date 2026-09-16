@@ -3,18 +3,25 @@
 import { useMemo, useState } from "react";
 import { formatDayLabel, formatTime, getWeekDays, parseDateKey, toDateKey } from "@/lib/dates";
 import { ShiftDialog } from "./shift-dialog";
-import type { FunctieOption, ShiftItem, StaffRow } from "./types";
+import type { AvailabilityEntry, FunctieOption, LeavePeriod, ShiftItem, StaffRow } from "./types";
+
+const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
+const LEAVE_COLOR: Record<LeavePeriod["type"], string> = { VERLOF: "#d97706", ZIEK: "#ea580c" };
 
 export function RoosterGrid({
   weekStartKey,
   staff,
   functies,
   shifts,
+  leavePeriods = [],
+  availability = [],
 }: {
   weekStartKey: string;
   staff: StaffRow[];
   functies: FunctieOption[];
   shifts: ShiftItem[];
+  leavePeriods?: LeavePeriod[];
+  availability?: AvailabilityEntry[];
 }) {
   const days = useMemo(() => getWeekDays(parseDateKey(weekStartKey)), [weekStartKey]);
   const [selection, setSelection] = useState<{ staffId: string; dateKey: string; shift: ShiftItem | null } | null>(
@@ -31,6 +38,18 @@ export function RoosterGrid({
     }
     return map;
   }, [shifts]);
+
+  const availabilityByCell = useMemo(() => {
+    const map = new Map<string, AvailabilityEntry>();
+    for (const entry of availability) {
+      map.set(`${entry.userId}_${entry.date}`, entry);
+    }
+    return map;
+  }, [availability]);
+
+  function leaveFor(userId: string, dateKey: string): LeavePeriod | undefined {
+    return leavePeriods.find((l) => l.userId === userId && dateKey >= l.startDate && dateKey <= l.endDate);
+  }
 
   const selectedStaff = staff.find((s) => s.id === selection?.staffId);
 
@@ -54,11 +73,31 @@ export function RoosterGrid({
               {days.map((day) => {
                 const dateKey = toDateKey(day);
                 const cellShifts = shiftsByCell.get(`${member.id}_${dateKey}`) ?? [];
+                const leave = leaveFor(member.id, dateKey);
+                const availabilityEntry = availabilityByCell.get(`${member.id}_${dateKey}`);
                 return (
                   <td
                     key={dateKey}
                     className="min-h-16 border-r p-1.5 align-top last:border-r-0"
                   >
+                    {leave && (
+                      <div
+                        className="mb-1 rounded-md px-2 py-1 text-xs font-medium text-white"
+                        style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
+                      >
+                        {LEAVE_LABEL[leave.type]}
+                      </div>
+                    )}
+                    {!leave && availabilityEntry?.status === "UNAVAILABLE" && (
+                      <div className="mb-1 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
+                        Niet beschikbaar
+                      </div>
+                    )}
+                    {!leave && availabilityEntry?.status === "PREFERRED" && (
+                      <div className="mb-1 rounded-md bg-emerald-600/10 px-2 py-1 text-xs font-medium text-emerald-700">
+                        Voorkeur
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={() => setSelection({ staffId: member.id, dateKey, shift: null })}

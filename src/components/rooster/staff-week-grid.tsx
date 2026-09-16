@@ -1,14 +1,19 @@
 import { formatDayLabel, formatTime, getWeekDays, parseDateKey, toDateKey } from "@/lib/dates";
-import type { ShiftItem, StaffRow } from "./types";
+import type { LeavePeriod, ShiftItem, StaffRow } from "./types";
+
+const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
+const LEAVE_COLOR: Record<LeavePeriod["type"], string> = { VERLOF: "#d97706", ZIEK: "#ea580c" };
 
 export function StaffWeekGrid({
   weekStartKey,
   staff,
   shifts,
+  leavePeriods = [],
 }: {
   weekStartKey: string;
   staff: StaffRow[];
   shifts: ShiftItem[];
+  leavePeriods?: LeavePeriod[];
 }) {
   const days = getWeekDays(parseDateKey(weekStartKey));
 
@@ -18,6 +23,10 @@ export function StaffWeekGrid({
     const list = shiftsByCell.get(key) ?? [];
     list.push(shift);
     shiftsByCell.set(key, list);
+  }
+
+  function leaveFor(userId: string, dateKey: string): LeavePeriod | undefined {
+    return leavePeriods.find((l) => l.userId === userId && dateKey >= l.startDate && dateKey <= l.endDate);
   }
 
   return (
@@ -40,9 +49,18 @@ export function StaffWeekGrid({
               {days.map((day) => {
                 const dateKey = toDateKey(day);
                 const cellShifts = shiftsByCell.get(`${member.id}_${dateKey}`) ?? [];
+                const leave = leaveFor(member.id, dateKey);
                 return (
                   <td key={dateKey} className="min-h-16 border-r p-1.5 align-top last:border-r-0">
                     <div className="flex flex-col gap-1">
+                      {leave && (
+                        <div
+                          className="rounded-md px-2 py-1.5 text-xs font-medium text-white"
+                          style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
+                        >
+                          {LEAVE_LABEL[leave.type]}
+                        </div>
+                      )}
                       {cellShifts.map((shift) => (
                         <div
                           key={shift.id}

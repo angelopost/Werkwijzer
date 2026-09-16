@@ -16,7 +16,7 @@ export default async function MijnRoosterPage({
   const from = days[0];
   const to = days[6];
 
-  const [staff, shifts] = await Promise.all([
+  const [staff, shifts, leaveRequests] = await Promise.all([
     prisma.user.findMany({
       where: { role: "STAFF", isActive: true },
       orderBy: { name: "asc" },
@@ -24,6 +24,9 @@ export default async function MijnRoosterPage({
     prisma.shift.findMany({
       where: { date: { gte: from, lte: to }, status: "PUBLISHED" },
       include: { functie: true },
+    }),
+    prisma.leaveRequest.findMany({
+      where: { status: "APPROVED", startDate: { lte: to }, endDate: { gte: from } },
     }),
   ]);
 
@@ -70,6 +73,12 @@ export default async function MijnRoosterPage({
           functieId: s.functieId,
           functieName: s.functie?.name ?? null,
           functieColor: s.functie?.color ?? null,
+        }))}
+        leavePeriods={leaveRequests.map((l) => ({
+          userId: l.userId,
+          type: l.type,
+          startDate: toDateKey(l.startDate),
+          endDate: toDateKey(l.endDate),
         }))}
       />
     </div>
