@@ -15,6 +15,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { toggleStaffActive, regenerateInvite } from "@/app/(admin)/medewerkers/actions";
 import { InviteLinkBanner } from "./invite-link-banner";
 import { ContractTypeSelect } from "./contract-type-select";
+import { ContractHoursInput } from "./contract-hours-input";
 
 type StaffRow = {
   id: string;
@@ -60,7 +61,9 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{member.email}</TableCell>
-                <TableCell>{member.contractHoursPerWeek ?? "—"}</TableCell>
+                <TableCell>
+                  <ContractHoursInput userId={member.id} value={member.contractHoursPerWeek} />
+                </TableCell>
                 <TableCell>
                   {!member.hasAcceptedInvite ? (
                     <Badge variant="secondary">Uitnodiging openstaand</Badge>

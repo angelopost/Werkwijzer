@@ -56,6 +56,18 @@ export async function setContractType(userId: string, contractType: "VAST" | "NU
   revalidatePath("/medewerkers");
 }
 
+export async function setContractHours(userId: string, hours: number | null) {
+  await requireAdmin();
+
+  if (hours !== null && (Number.isNaN(hours) || hours < 0 || hours > 60)) {
+    return { error: "Contracturen moeten tussen 0 en 60 liggen" };
+  }
+
+  await prisma.user.update({ where: { id: userId }, data: { contractHoursPerWeek: hours } });
+  revalidatePath("/medewerkers");
+  revalidatePath("/uren");
+}
+
 export async function toggleStaffActive(userId: string) {
   await requireAdmin();
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
