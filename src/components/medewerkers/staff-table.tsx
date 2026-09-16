@@ -16,6 +16,8 @@ import { toggleStaffActive, regenerateInvite } from "@/app/(admin)/medewerkers/a
 import { InviteLinkBanner } from "./invite-link-banner";
 import { ContractTypeSelect } from "./contract-type-select";
 import { ContractHoursInput } from "./contract-hours-input";
+import { StaffNameEditor } from "./staff-name-editor";
+import { DeleteStaffButton } from "./delete-staff-button";
 
 type StaffRow = {
   id: string;
@@ -56,7 +58,7 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2.5">
                     <UserAvatar name={member.name} />
-                    {member.name}
+                    <StaffNameEditor userId={member.id} name={member.name} />
                     <ContractTypeSelect userId={member.id} value={member.contractType} />
                   </div>
                 </TableCell>
@@ -84,6 +86,7 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
                       {member.isActive ? "Deactiveren" : "Activeren"}
                     </Button>
                   </form>
+                  <DeleteStaffButton userId={member.id} name={member.name} />
                 </TableCell>
               </TableRow>
             ))}

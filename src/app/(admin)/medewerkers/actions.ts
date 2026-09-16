@@ -75,6 +75,35 @@ export async function toggleStaffActive(userId: string) {
   revalidatePath("/medewerkers");
 }
 
+export async function updateStaffName(userId: string, name: string) {
+  await requireAdmin();
+
+  const parsed = staffFormSchema.shape.name.safeParse(name);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Ongeldige naam" };
+  }
+
+  await prisma.user.update({ where: { id: userId }, data: { name: parsed.data } });
+
+  revalidatePath("/medewerkers");
+  revalidatePath("/rooster");
+  revalidatePath("/mijn-rooster");
+  revalidatePath("/uren");
+  revalidatePath("/goedkeuringen");
+  return { success: true };
+}
+
+export async function deleteStaffMember(userId: string) {
+  await requireAdmin();
+  await prisma.user.delete({ where: { id: userId } });
+
+  revalidatePath("/medewerkers");
+  revalidatePath("/rooster");
+  revalidatePath("/mijn-rooster");
+  revalidatePath("/uren");
+  revalidatePath("/goedkeuringen");
+}
+
 export async function regenerateInvite(userId: string): Promise<StaffActionState> {
   await requireAdmin();
   const token = randomBytes(24).toString("hex");
