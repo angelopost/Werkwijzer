@@ -125,8 +125,21 @@ model PermanentShift {
   createdAt    DateTime @default(now())
 
   shifts       Shift[]
+  exceptions   PermanentShiftException[]
 
   @@index([userId, weekday])
+}
+
+/// Een specifieke datum die is uitgesloten van een vast patroon (bv. omdat de beheerder
+/// die ene dag heeft verwijderd). Voorkomt dat materialisatie 'm opnieuw aanmaakt.
+model PermanentShiftException {
+  id               String         @id @default(cuid())
+  permanentShiftId String
+  permanentShift   PermanentShift @relation(fields: [permanentShiftId], references: [id], onDelete: Cascade)
+  date             DateTime       @db.Date
+  createdAt        DateTime       @default(now())
+
+  @@unique([permanentShiftId, date])
 }
 
 model LeaveRequest {

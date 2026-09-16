@@ -108,20 +108,13 @@ export function ShiftDialog({
           </div>
 
           {canMakePermanent ? (
-            <label className="group/field-label flex items-start gap-2.5 rounded-lg border p-3 text-sm">
-              <Checkbox name="permanent" defaultChecked={false} className="mt-0.5" />
-              <span className="flex flex-col gap-0.5">
-                <span className="font-medium">Permanent</span>
-                <span className="text-muted-foreground">
-                  Plant {staffName} vanaf nu elke {weekdayLabel} in met deze tijden, ook in
-                  toekomstige weken en maanden. Eerdere weken blijven ongewijzigd.
-                </span>
-              </span>
+            <label className="flex items-center gap-2.5 rounded-lg border p-3 text-sm">
+              <Checkbox name="permanent" defaultChecked={false} />
+              <span className="font-medium">Permanent</span>
             </label>
           ) : (
             <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
-              Onderdeel van een vast rooster-patroon (elke {weekdayLabel}). Wijzigingen hier
-              gelden alleen voor deze dag.
+              Vast rooster-patroon (elke {weekdayLabel})
             </p>
           )}
 

@@ -55,7 +55,18 @@ export async function saveShift(_prevState: ActionState, formData: FormData): Pr
 
 export async function deleteShift(shiftId: string) {
   await requireAdmin();
-  await prisma.shift.delete({ where: { id: shiftId } });
+  const shift = await prisma.shift.delete({ where: { id: shiftId } });
+
+  if (shift.permanentShiftId) {
+    await prisma.permanentShiftException.upsert({
+      where: {
+        permanentShiftId_date: { permanentShiftId: shift.permanentShiftId, date: shift.date },
+      },
+      create: { permanentShiftId: shift.permanentShiftId, date: shift.date },
+      update: {},
+    });
+  }
+
   revalidatePath("/rooster");
   revalidatePath("/mijn-rooster");
 }
@@ -109,10 +120,24 @@ export async function publishWeek(weekStartKey: string) {
   const from = days[0];
   const to = days[6];
 
+  // Vaste patronen die deze week meepubliceren, publiceren we direct helemaal door
+  // (alle weken en maanden tegelijk), zodat dat niet per week hoeft te gebeuren.
+  const draftPermanentShiftIds = await prisma.shift.findMany({
+    where: { status: "DRAFT", date: { gte: from, lte: to }, permanentShiftId: { not: null } },
+    select: { permanentShiftId: true },
+    distinct: ["permanentShiftId"],
+  });
+  const permanentShiftIds = draftPermanentShiftIds
+    .map((s) => s.permanentShiftId)
+    .filter((id): id is string => id !== null);
+
   await prisma.shift.updateMany({
     where: {
       status: "DRAFT",
-      date: { gte: from, lte: to },
+      OR: [
+        { date: { gte: from, lte: to } },
+        ...(permanentShiftIds.length > 0 ? [{ permanentShiftId: { in: permanentShiftIds } }] : []),
+      ],
     },
     data: { status: "PUBLISHED" },
   });

@@ -46,11 +46,21 @@ export async function materializePermanentShifts(rangeStart: Date, rangeEnd: Dat
   });
   const existingKeys = new Set(existing.map((s) => `${s.assignedUserId}_${toDateKey(s.date)}`));
 
+  const exceptions = await prisma.permanentShiftException.findMany({
+    where: {
+      permanentShiftId: { in: templates.map((t) => t.id) },
+      date: { gte: rangeStart, lte: rangeEnd },
+    },
+    select: { permanentShiftId: true, date: true },
+  });
+  const excludedKeys = new Set(exceptions.map((e) => `${e.permanentShiftId}_${toDateKey(e.date)}`));
+
   const toCreate: ShiftCreateInput[] = [];
   for (const template of templates) {
     for (const date of occurrencesInRange(template.weekday, template.activeFrom, rangeStart, rangeEnd)) {
       const key = `${template.userId}_${toDateKey(date)}`;
       if (existingKeys.has(key)) continue;
+      if (excludedKeys.has(`${template.id}_${toDateKey(date)}`)) continue;
       existingKeys.add(key);
 
       const dateKey = toDateKey(date);
