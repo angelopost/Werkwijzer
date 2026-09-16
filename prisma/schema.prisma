@@ -1,0 +1,212 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum ShiftStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE
+  PREFERRED
+}
+
+enum SwapStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum LeaveType {
+  VERLOF
+  ZIEK
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  UITNODIGING
+  DIENST_TOEGEWEZEN
+  RUIL_AANGEVRAAGD
+  RUIL_GOEDGEKEURD
+  RUIL_AFGEWEZEN
+  VERLOF_AANGEVRAAGD
+  VERLOF_GOEDGEKEURD
+  VERLOF_AFGEWEZEN
+  ZIEKMELDING
+  ROOSTER_GEPUBLICEERD
+}
+
+model User {
+  id                   String    @id @default(cuid())
+  name                 String
+  email                String    @unique
+  passwordHash         String?
+  role                 Role      @default(STAFF)
+  isActive             Boolean   @default(true)
+  contractHoursPerWeek Float?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  invite               Invite?
+
+  functies             UserFunctie[]
+  shifts               Shift[]              @relation("ShiftAssignee")
+  createdShifts        Shift[]              @relation("ShiftCreatedBy")
+  availability         Availability[]
+  swapRequestsMade     ShiftSwapRequest[]   @relation("SwapRequester")
+  swapRequestsTargeted ShiftSwapRequest[]   @relation("SwapTarget")
+  swapRequestsReviewed ShiftSwapRequest[]   @relation("SwapReviewer")
+  leaveRequests        LeaveRequest[]       @relation("LeaveRequester")
+  leaveRequestsReviewed LeaveRequest[]      @relation("LeaveReviewer")
+  notifications        Notification[]
+}
+
+model Invite {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  acceptedAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model Functie {
+  id     String        @id @default(cuid())
+  name   String        @unique
+  color  String
+  users  UserFunctie[]
+  shifts Shift[]
+}
+
+model UserFunctie {
+  userId    String
+  functieId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  functie   Functie @relation(fields: [functieId], references: [id], onDelete: Cascade)
+
+  @@id([userId, functieId])
+}
+
+model Shift {
+  id            String      @id @default(cuid())
+  date          DateTime    @db.Date
+  startTime     DateTime
+  endTime       DateTime
+  breakMinutes  Int         @default(0)
+  notes         String?
+  status        ShiftStatus @default(DRAFT)
+
+  functieId     String?
+  functie       Functie?    @relation(fields: [functieId], references: [id])
+
+  assignedUserId String?
+  assignedUser   User?      @relation("ShiftAssignee", fields: [assignedUserId], references: [id])
+
+  createdById   String
+  createdBy     User        @relation("ShiftCreatedBy", fields: [createdById], references: [id])
+
+  swapRequests  ShiftSwapRequest[]
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([date])
+  @@index([assignedUserId, date])
+}
+
+model Availability {
+  id     String              @id @default(cuid())
+  userId String
+  user   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   DateTime            @db.Date
+  status AvailabilityStatus
+  note   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+model ShiftSwapRequest {
+  id                String     @id @default(cuid())
+  shiftId           String
+  shift             Shift      @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+
+  requestingUserId  String
+  requestingUser    User       @relation("SwapRequester", fields: [requestingUserId], references: [id])
+
+  targetUserId      String?
+  targetUser        User?      @relation("SwapTarget", fields: [targetUserId], references: [id])
+
+  status            SwapStatus @default(PENDING)
+
+  reviewedById      String?
+  reviewedBy        User?      @relation("SwapReviewer", fields: [reviewedById], references: [id])
+  reviewedAt        DateTime?
+  reviewNote        String?
+
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([shiftId])
+  @@index([status])
+}
+
+model LeaveRequest {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation("LeaveRequester", fields: [userId], references: [id], onDelete: Cascade)
+
+  type          LeaveType
+  startDate     DateTime    @db.Date
+  endDate       DateTime    @db.Date
+  reason        String?
+  status        LeaveStatus @default(PENDING)
+
+  reviewedById  String?
+  reviewedBy    User?       @relation("LeaveReviewer", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+  reviewNote    String?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  payload   Json?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+}
