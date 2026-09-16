@@ -25,12 +25,6 @@ enum ShiftStatus {
   PUBLISHED
 }
 
-enum AvailabilityStatus {
-  AVAILABLE
-  UNAVAILABLE
-  PREFERRED
-}
-
 enum LeaveType {
   VERLOF
   ZIEK
@@ -68,7 +62,6 @@ model User {
 
   shifts               Shift[]              @relation("ShiftAssignee")
   createdShifts        Shift[]              @relation("ShiftCreatedBy")
-  availability         Availability[]
   leaveRequests        LeaveRequest[]       @relation("LeaveRequester")
   leaveRequestsReviewed LeaveRequest[]      @relation("LeaveReviewer")
   notifications        Notification[]
@@ -104,21 +97,6 @@ model Shift {
 
   @@index([date])
   @@index([assignedUserId, date])
-}
-
-model Availability {
-  id     String              @id @default(cuid())
-  userId String
-  user   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date   DateTime            @db.Date
-  status AvailabilityStatus
-  note   String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, date])
-  @@index([userId, date])
 }
 
 model LeaveRequest {

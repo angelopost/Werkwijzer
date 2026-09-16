@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import {
   CalendarRange,
   CalendarDays,
-  CalendarCheck,
   ClipboardCheck,
   Users,
   Clock,
@@ -18,7 +17,6 @@ import type { IconKey, NavLink } from "./nav-links";
 
 const ICONS: Record<IconKey, LucideIcon> = {
   calendar: CalendarDays,
-  calendarCheck: CalendarCheck,
   check: ClipboardCheck,
   users: Users,
   clock: Clock,

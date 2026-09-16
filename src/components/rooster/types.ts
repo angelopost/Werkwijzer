@@ -21,9 +21,3 @@ export type LeavePeriod = {
   startDate: string;
   endDate: string;
 };
-
-export type AvailabilityEntry = {
-  userId: string;
-  date: string;
-  status: "AVAILABLE" | "UNAVAILABLE" | "PREFERRED";
-};

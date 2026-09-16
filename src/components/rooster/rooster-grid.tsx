@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { ContractTypeBadge } from "@/components/ui/contract-type-badge";
 import { ShiftDialog } from "./shift-dialog";
-import type { AvailabilityEntry, LeavePeriod, ShiftItem, StaffRow } from "./types";
+import type { LeavePeriod, ShiftItem, StaffRow } from "./types";
 
 const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
 const LEAVE_COLOR: Record<LeavePeriod["type"], string> = { VERLOF: "#d97706", ZIEK: "#ea580c" };
@@ -26,13 +26,11 @@ export function RoosterGrid({
   staff,
   shifts,
   leavePeriods = [],
-  availability = [],
 }: {
   weekStartKey: string;
   staff: StaffRow[];
   shifts: ShiftItem[];
   leavePeriods?: LeavePeriod[];
-  availability?: AvailabilityEntry[];
 }) {
   const days = useMemo(() => getWeekDays(parseDateKey(weekStartKey)), [weekStartKey]);
   const [selection, setSelection] = useState<{ staffId: string; dateKey: string; shift: ShiftItem | null } | null>(
@@ -49,14 +47,6 @@ export function RoosterGrid({
     }
     return map;
   }, [shifts]);
-
-  const availabilityByCell = useMemo(() => {
-    const map = new Map<string, AvailabilityEntry>();
-    for (const entry of availability) {
-      map.set(`${entry.userId}_${entry.date}`, entry);
-    }
-    return map;
-  }, [availability]);
 
   function leaveFor(userId: string, dateKey: string): LeavePeriod | undefined {
     return leavePeriods.find((l) => l.userId === userId && dateKey >= l.startDate && dateKey <= l.endDate);
@@ -110,7 +100,6 @@ export function RoosterGrid({
                 const dateKey = toDateKey(day);
                 const cellShifts = shiftsByCell.get(`${member.id}_${dateKey}`) ?? [];
                 const leave = leaveFor(member.id, dateKey);
-                const availabilityEntry = availabilityByCell.get(`${member.id}_${dateKey}`);
                 const today = isToday(day);
                 return (
                   <td
@@ -123,16 +112,6 @@ export function RoosterGrid({
                         style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
                       >
                         {LEAVE_LABEL[leave.type]}
-                      </div>
-                    )}
-                    {!leave && availabilityEntry?.status === "UNAVAILABLE" && (
-                      <div className="mb-1 rounded-lg bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
-                        Niet beschikbaar
-                      </div>
-                    )}
-                    {!leave && availabilityEntry?.status === "PREFERRED" && (
-                      <div className="mb-1 rounded-lg bg-emerald-600/10 px-2 py-1 text-xs font-medium text-emerald-700">
-                        Voorkeur
                       </div>
                     )}
                     <button
