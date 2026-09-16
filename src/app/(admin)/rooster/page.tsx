@@ -38,10 +38,10 @@ export default async function RoosterPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <WeekNav basePath="/rooster" weekStart={weekStart} />
         <form action={publishWeek.bind(null, weekStartKey)}>
-          <Button type="submit" disabled={!hasDraft}>
+          <Button type="submit" disabled={!hasDraft} className="w-full sm:w-auto">
             {hasDraft ? "Publiceren" : "Gepubliceerd"}
           </Button>
         </form>
