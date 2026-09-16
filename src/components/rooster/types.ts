@@ -13,6 +13,7 @@ export type ShiftItem = {
   notes: string | null;
   status: "DRAFT" | "PUBLISHED";
   assignedUserId: string | null;
+  permanentShiftId: string | null;
 };
 
 export type LeavePeriod = {

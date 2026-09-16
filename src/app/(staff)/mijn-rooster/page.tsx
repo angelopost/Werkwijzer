@@ -44,6 +44,7 @@ export default async function MijnRoosterPage({
           notes: s.notes,
           status: s.status,
           assignedUserId: s.assignedUserId,
+          permanentShiftId: s.permanentShiftId,
         }))}
         leavePeriods={leaveRequests.map((l) => ({
           id: l.id,

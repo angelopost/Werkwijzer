@@ -65,6 +65,8 @@ model User {
   leaveRequests        LeaveRequest[]       @relation("LeaveRequester")
   leaveRequestsReviewed LeaveRequest[]      @relation("LeaveReviewer")
   notifications        Notification[]
+  permanentShifts        PermanentShift[]   @relation("PermanentShiftAssignee")
+  createdPermanentShifts PermanentShift[]   @relation("PermanentShiftCreatedBy")
 }
 
 model Invite {
@@ -92,11 +94,39 @@ model Shift {
   createdById   String
   createdBy     User        @relation("ShiftCreatedBy", fields: [createdById], references: [id])
 
+  permanentShiftId String?
+  permanentShift    PermanentShift? @relation(fields: [permanentShiftId], references: [id], onDelete: SetNull)
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
   @@index([date])
   @@index([assignedUserId, date])
+}
+
+/// Vast rooster-patroon: op een vaste weekdag ingepland vanaf een bepaalde datum,
+/// zonder voorgaande weken met terugwerkende kracht te vullen.
+model PermanentShift {
+  id           String   @id @default(cuid())
+
+  userId       String
+  user         User     @relation("PermanentShiftAssignee", fields: [userId], references: [id], onDelete: Cascade)
+
+  weekday      Int      // 0 = maandag … 6 = zondag (zelfde volgorde als lib/dates.ts)
+  startTime    String   // "HH:mm"
+  endTime      String   // "HH:mm"
+  breakMinutes Int      @default(0)
+  notes        String?
+
+  activeFrom   DateTime @db.Date
+
+  createdById  String
+  createdBy    User     @relation("PermanentShiftCreatedBy", fields: [createdById], references: [id])
+  createdAt    DateTime @default(now())
+
+  shifts       Shift[]
+
+  @@index([userId, weekday])
 }
 
 model LeaveRequest {

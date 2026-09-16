@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { combineDateAndTime, getWeekDays, parseDateKey } from "@/lib/dates";
+import { combineDateAndTime, getWeekDays, getWeekdayIndex, parseDateKey } from "@/lib/dates";
+import { createPermanentShift } from "@/lib/permanent-shifts";
 import { shiftFormSchema } from "@/lib/validation/shift";
 import { leaveFormSchema } from "@/lib/validation/leave";
 
@@ -32,6 +33,19 @@ export async function saveShift(_prevState: ActionState, formData: FormData): Pr
     await prisma.shift.update({ where: { id: shiftId }, data: values });
   } else {
     await prisma.shift.create({ data: { ...values, createdById: admin.id } });
+  }
+
+  if (data.permanent) {
+    await createPermanentShift({
+      userId: data.assignedUserId,
+      weekday: getWeekdayIndex(values.date),
+      startTime: data.startTime,
+      endTime: data.endTime,
+      breakMinutes: data.breakMinutes,
+      notes: data.notes || null,
+      activeFrom: values.date,
+      createdById: admin.id,
+    });
   }
 
   revalidatePath("/rooster");

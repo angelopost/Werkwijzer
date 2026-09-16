@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
+import { materializePermanentShiftsForWeek } from "@/lib/permanent-shifts";
 import { RoosterGrid } from "@/components/rooster/rooster-grid";
 import { Button } from "@/components/ui/button";
 import { WeekNav } from "@/components/layout/week-nav";
@@ -16,6 +17,8 @@ export default async function RoosterPage({
   const days = getWeekDays(weekStart);
   const from = days[0];
   const to = days[6];
+
+  await materializePermanentShiftsForWeek(weekStart);
 
   const [staff, shifts, leaveRequests] = await Promise.all([
     prisma.user.findMany({
@@ -60,6 +63,7 @@ export default async function RoosterPage({
           notes: s.notes,
           status: s.status,
           assignedUserId: s.assignedUserId,
+          permanentShiftId: s.permanentShiftId,
         }))}
         leavePeriods={leaveRequests.map((l) => ({
           id: l.id,

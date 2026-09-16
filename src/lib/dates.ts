@@ -1,6 +1,15 @@
 import { parseISO } from "date-fns";
 
 const WEEKDAY_LABELS = ["ma", "di", "wo", "do", "vr", "za", "zo"];
+const WEEKDAY_FULL_LABELS = [
+  "maandag",
+  "dinsdag",
+  "woensdag",
+  "donderdag",
+  "vrijdag",
+  "zaterdag",
+  "zondag",
+];
 const MONTH_LABELS = [
   "jan",
   "feb",
@@ -20,10 +29,19 @@ function pad(n: number): string {
   return n.toString().padStart(2, "0");
 }
 
-function addUTCDays(date: Date, amount: number): Date {
+export function addUTCDays(date: Date, amount: number): Date {
   const result = new Date(date.getTime());
   result.setUTCDate(result.getUTCDate() + amount);
   return result;
+}
+
+/** 0 = maandag … 6 = zondag (zelfde volgorde als de weekgrid en PermanentShift.weekday). */
+export function getWeekdayIndex(date: Date): number {
+  return (date.getUTCDay() + 6) % 7;
+}
+
+export function getWeekdayFullLabel(date: Date): string {
+  return WEEKDAY_FULL_LABELS[getWeekdayIndex(date)];
 }
 
 /** Calendar dates (Shift.date, week boundaries, …) are represented as UTC-midnight

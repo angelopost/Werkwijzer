@@ -12,8 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { saveShift, deleteShift, type ActionState } from "@/app/(admin)/rooster/actions";
-import { formatTime } from "@/lib/dates";
+import { formatTime, getWeekdayFullLabel, parseDateKey } from "@/lib/dates";
 import type { ShiftItem } from "./types";
 
 export function ShiftDialog({
@@ -47,6 +48,9 @@ export function ShiftDialog({
     await deleteShift(shift.id);
     onOpenChange(false);
   }
+
+  const weekdayLabel = getWeekdayFullLabel(parseDateKey(dateKey));
+  const canMakePermanent = !shift || !shift.permanentShiftId;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -102,6 +106,24 @@ export function ShiftDialog({
             <Label htmlFor="notes">Notities</Label>
             <Textarea id="notes" name="notes" defaultValue={shift?.notes ?? ""} />
           </div>
+
+          {canMakePermanent ? (
+            <label className="group/field-label flex items-start gap-2.5 rounded-lg border p-3 text-sm">
+              <Checkbox name="permanent" defaultChecked={false} className="mt-0.5" />
+              <span className="flex flex-col gap-0.5">
+                <span className="font-medium">Permanent</span>
+                <span className="text-muted-foreground">
+                  Plant {staffName} vanaf nu elke {weekdayLabel} in met deze tijden, ook in
+                  toekomstige weken en maanden. Eerdere weken blijven ongewijzigd.
+                </span>
+              </span>
+            </label>
+          ) : (
+            <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+              Onderdeel van een vast rooster-patroon (elke {weekdayLabel}). Wijzigingen hier
+              gelden alleen voor deze dag.
+            </p>
+          )}
 
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 

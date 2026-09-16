@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Repeat } from "lucide-react";
 import {
   formatTime,
   getMonthShort,
@@ -136,7 +136,8 @@ export function RoosterGrid({
                             shift.status === "DRAFT" && "opacity-55"
                           )}
                         >
-                          <div className="text-xs font-semibold">
+                          <div className="flex items-center gap-1 text-xs font-semibold">
+                            {shift.permanentShiftId && <Repeat className="size-3 shrink-0" strokeWidth={2.5} />}
                             {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
                           </div>
                           {shift.status === "DRAFT" && <div className="text-xs opacity-90">Concept</div>}

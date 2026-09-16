@@ -8,6 +8,7 @@ export const shiftFormSchema = z
     endTime: z.string().regex(/^\d{2}:\d{2}$/, { error: "Ongeldige eindtijd" }),
     breakMinutes: z.coerce.number().int().min(0).max(240).default(0),
     notes: z.string().max(500).optional(),
+    permanent: z.coerce.boolean().optional().default(false),
   })
   .refine((data) => data.endTime > data.startTime, {
     error: "Eindtijd moet na starttijd liggen",
