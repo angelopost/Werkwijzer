@@ -6,7 +6,7 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   const user = await requireStaff();
 
   return (
-    <AppShell links={STAFF_NAV} userName={user.name} roleLabel="Personeel" title="Mijn rooster">
+    <AppShell links={STAFF_NAV} userName={user.name} roleLabel="Personeel">
       {children}
     </AppShell>
   );

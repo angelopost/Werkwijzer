@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 const ADMIN_PREFIXES = ["/rooster", "/medewerkers", "/functies", "/goedkeuringen", "/uren"];
 const STAFF_PREFIXES = ["/mijn-rooster", "/beschikbaarheid", "/ruilen", "/verlof"];
 const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PREFIXES = ["/uitnodiging/"];
 
 function homeFor(role: "ADMIN" | "STAFF") {
   return role === "ADMIN" ? "/rooster" : "/mijn-rooster";
@@ -12,6 +13,10 @@ function homeFor(role: "ADMIN" | "STAFF") {
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const user = req.auth?.user;
+
+  if (PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return NextResponse.next();
+  }
 
   if (PUBLIC_PATHS.includes(pathname)) {
     if (user) {
