@@ -15,6 +15,11 @@ enum Role {
   STAFF
 }
 
+enum ContractType {
+  VAST
+  NUL_UREN
+}
+
 enum ShiftStatus {
   DRAFT
   PUBLISHED
@@ -65,6 +70,7 @@ model User {
   role                 Role      @default(STAFF)
   isActive             Boolean   @default(true)
   contractHoursPerWeek Float?
+  contractType         ContractType?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 

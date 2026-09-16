@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { toggleStaffActive, regenerateInvite } from "@/app/(admin)/medewerkers/actions";
 import { InviteLinkBanner } from "./invite-link-banner";
+import { ContractTypeSelect } from "./contract-type-select";
 
 type StaffRow = {
   id: string;
@@ -21,6 +22,7 @@ type StaffRow = {
   email: string;
   isActive: boolean;
   contractHoursPerWeek: number | null;
+  contractType: "VAST" | "NUL_UREN" | null;
   functieNames: string[];
   hasAcceptedInvite: boolean;
 };
@@ -56,6 +58,7 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
                   <div className="flex items-center gap-2.5">
                     <UserAvatar name={member.name} />
                     {member.name}
+                    <ContractTypeSelect userId={member.id} value={member.contractType} />
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{member.email}</TableCell>

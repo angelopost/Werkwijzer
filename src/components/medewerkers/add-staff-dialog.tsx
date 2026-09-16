@@ -12,6 +12,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { createStaffMember, type StaffActionState } from "@/app/(admin)/medewerkers/actions";
 import { InviteLinkBanner } from "./invite-link-banner";
 
@@ -53,6 +60,26 @@ export function AddStaffDialog({ functies }: { functies: { id: string; name: str
             <div className="flex flex-col gap-2">
               <Label htmlFor="contractHoursPerWeek">Contracturen per week</Label>
               <Input id="contractHoursPerWeek" name="contractHoursPerWeek" type="number" min={0} max={60} />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="contractType">Contracttype</Label>
+              <Select name="contractType">
+                <SelectTrigger id="contractType" className="w-full">
+                  <SelectValue placeholder="Geen label">
+                    {(value: string | null) =>
+                      value === "VAST"
+                        ? "Vast contract"
+                        : value === "NUL_UREN"
+                          ? "Nul uren contract"
+                          : "Geen label"
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="VAST">Vast contract</SelectItem>
+                  <SelectItem value="NUL_UREN">Nul uren contract</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-2">
               <Label>Functie(s)</Label>
