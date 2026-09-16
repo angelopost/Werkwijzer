@@ -22,5 +22,7 @@ export type LeavePeriod = {
   type: "VERLOF" | "ZIEK";
   startDate: string;
   endDate: string;
+  startTime: string | null;
+  endTime: string | null;
   reason: string | null;
 };

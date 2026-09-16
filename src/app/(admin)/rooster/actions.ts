@@ -97,6 +97,8 @@ export async function updateLeavePeriod(
     type: formData.get("type"),
     startDate: formData.get("startDate"),
     endDate: formData.get("endDate"),
+    startTime: formData.get("startTime") || undefined,
+    endTime: formData.get("endTime") || undefined,
     reason: formData.get("reason") || undefined,
   });
   if (!parsed.success) {
@@ -110,6 +112,8 @@ export async function updateLeavePeriod(
       type: data.type,
       startDate: parseDateKey(data.startDate),
       endDate: parseDateKey(data.endDate),
+      startTime: data.startTime || null,
+      endTime: data.endTime || null,
       reason: data.reason || null,
     },
   });

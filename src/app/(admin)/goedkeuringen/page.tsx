@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatDayLabel } from "@/lib/dates";
+import { formatLeaveRangeLabel } from "@/lib/dates";
 import { ApprovalButtons } from "@/components/goedkeuringen/approval-buttons";
 import { approveLeave, rejectLeave } from "./actions";
 
@@ -31,7 +31,12 @@ export default async function GoedkeuringenPage() {
                       {request.user.name} · {TYPE_LABEL[request.type]}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {formatDayLabel(request.startDate)} t/m {formatDayLabel(request.endDate)}
+                      {formatLeaveRangeLabel(
+                        request.startDate,
+                        request.endDate,
+                        request.startTime,
+                        request.endTime
+                      )}
                       {request.reason && ` · ${request.reason}`}
                     </p>
                   </div>

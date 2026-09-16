@@ -15,6 +15,8 @@ export async function requestLeave(_prevState: LeaveActionState, formData: FormD
     type: formData.get("type"),
     startDate: formData.get("startDate"),
     endDate: formData.get("endDate"),
+    startTime: formData.get("startTime") || undefined,
+    endTime: formData.get("endTime") || undefined,
     reason: formData.get("reason") || undefined,
   });
   if (!parsed.success) {
@@ -28,6 +30,8 @@ export async function requestLeave(_prevState: LeaveActionState, formData: FormD
       type: data.type,
       startDate: parseDateKey(data.startDate),
       endDate: parseDateKey(data.endDate),
+      startTime: data.startTime || null,
+      endTime: data.endTime || null,
       reason: data.reason ?? null,
       // Ziekmelding heeft direct effect en hoeft niet goedgekeurd te worden.
       status: data.type === "ZIEK" ? "APPROVED" : "PENDING",

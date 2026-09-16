@@ -52,6 +52,8 @@ export default async function MijnRoosterPage({
           type: l.type,
           startDate: toDateKey(l.startDate),
           endDate: toDateKey(l.endDate),
+          startTime: l.startTime,
+          endTime: l.endTime,
           reason: l.reason,
         }))}
       />

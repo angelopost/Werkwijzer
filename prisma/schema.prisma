@@ -150,6 +150,8 @@ model LeaveRequest {
   type          LeaveType
   startDate     DateTime    @db.Date
   endDate       DateTime    @db.Date
+  startTime     String?     // "HH:mm", optioneel (leeg = hele dag)
+  endTime       String?     // "HH:mm", optioneel (leeg = hele dag)
   reason        String?
   status        LeaveStatus @default(PENDING)
 

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { formatDayLabel } from "@/lib/dates";
+import { formatLeaveRangeLabel } from "@/lib/dates";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { LeaveForm } from "./leave-form";
@@ -40,10 +40,13 @@ export default async function VerlofPage() {
               <CardContent className="flex items-center justify-between py-3">
                 <div>
                   <p className="font-medium">
-                    {TYPE_LABEL[request.type]} · {formatDayLabel(request.startDate)}
-                    {toDateKeyEq(request.startDate, request.endDate)
-                      ? ""
-                      : ` t/m ${formatDayLabel(request.endDate)}`}
+                    {TYPE_LABEL[request.type]} ·{" "}
+                    {formatLeaveRangeLabel(
+                      request.startDate,
+                      request.endDate,
+                      request.startTime,
+                      request.endTime
+                    )}
                   </p>
                   {request.reason && <p className="text-sm text-muted-foreground">{request.reason}</p>}
                 </div>
@@ -60,8 +63,4 @@ export default async function VerlofPage() {
       </section>
     </div>
   );
-}
-
-function toDateKeyEq(a: Date, b: Date): boolean {
-  return a.getTime() === b.getTime();
 }

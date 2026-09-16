@@ -107,3 +107,22 @@ export function formatTime(date: Date): string {
 export function combineDateAndTime(dateKey: string, time: string): Date {
   return parseISO(`${dateKey}T${time}:00Z`);
 }
+
+/** Nette weergave van een verlof-/ziekteperiode, inclusief tijden als die zijn ingevuld. */
+export function formatLeaveRangeLabel(
+  startDate: Date,
+  endDate: Date,
+  startTime: string | null,
+  endTime: string | null
+): string {
+  const sameDay = toDateKey(startDate) === toDateKey(endDate);
+  const hasTimes = Boolean(startTime && endTime);
+
+  if (sameDay) {
+    return hasTimes ? `${formatDayLabel(startDate)}, ${startTime} - ${endTime}` : formatDayLabel(startDate);
+  }
+
+  const startLabel = hasTimes ? `${formatDayLabel(startDate)} ${startTime}` : formatDayLabel(startDate);
+  const endLabel = hasTimes ? `${formatDayLabel(endDate)} ${endTime}` : formatDayLabel(endDate);
+  return `${startLabel} t/m ${endLabel}`;
+}

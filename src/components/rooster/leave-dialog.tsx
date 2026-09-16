@@ -95,6 +95,30 @@ export function LeaveDialog({
             </div>
           </div>
 
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex w-full min-w-0 flex-col gap-2">
+              <Label htmlFor="startTime">Begintijd (optioneel)</Label>
+              <Input
+                id="startTime"
+                name="startTime"
+                type="time"
+                className="block w-full max-w-full overflow-hidden"
+                defaultValue={leave.startTime ?? ""}
+              />
+            </div>
+            <div className="flex w-full min-w-0 flex-col gap-2">
+              <Label htmlFor="endTime">Eindtijd (optioneel)</Label>
+              <Input
+                id="endTime"
+                name="endTime"
+                type="time"
+                className="block w-full max-w-full overflow-hidden"
+                defaultValue={leave.endTime ?? ""}
+              />
+            </div>
+          </div>
+          <p className="-mt-2 text-xs text-muted-foreground">Laat leeg voor een hele dag.</p>
+
           <div className="flex flex-col gap-2">
             <Label htmlFor="reason">Toelichting</Label>
             <Textarea id="reason" name="reason" defaultValue={leave.reason ?? ""} />
