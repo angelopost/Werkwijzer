@@ -126,23 +126,25 @@ export function ShiftDialog({
           <p className="text-sm text-muted-foreground">{dateLabel}</p>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex flex-col gap-2">
+            <div className="flex w-full min-w-0 flex-col gap-2">
               <Label htmlFor="startTime">Starttijd</Label>
               <Input
                 id="startTime"
                 name="startTime"
                 type="time"
                 required
+                className="block w-full max-w-full overflow-hidden"
                 defaultValue={shift ? formatTime(new Date(shift.startTime)) : "09:00"}
               />
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex w-full min-w-0 flex-col gap-2">
               <Label htmlFor="endTime">Eindtijd</Label>
               <Input
                 id="endTime"
                 name="endTime"
                 type="time"
                 required
+                className="block w-full max-w-full overflow-hidden"
                 defaultValue={shift ? formatTime(new Date(shift.endTime)) : "17:00"}
               />
             </div>

@@ -35,13 +35,25 @@ export function LeaveForm() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-2">
+        <div className="flex w-full min-w-0 flex-col gap-2">
           <Label htmlFor="startDate">Startdatum</Label>
-          <Input id="startDate" name="startDate" type="date" required />
+          <Input
+            id="startDate"
+            name="startDate"
+            type="date"
+            required
+            className="block w-full max-w-full overflow-hidden"
+          />
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="flex w-full min-w-0 flex-col gap-2">
           <Label htmlFor="endDate">Einddatum</Label>
-          <Input id="endDate" name="endDate" type="date" required />
+          <Input
+            id="endDate"
+            name="endDate"
+            type="date"
+            required
+            className="block w-full max-w-full overflow-hidden"
+          />
         </div>
       </div>
 
