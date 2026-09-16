@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { formatWeekRangeLabel, getWeekDays, getWeekStart, parseDateKey, shiftWeek, toDateKey } from "@/lib/dates";
+import { getWeekDays, getWeekStart, parseDateKey } from "@/lib/dates";
 import { formatHours, shiftHours } from "@/lib/hours";
-import { Button } from "@/components/ui/button";
+import { WeekNav } from "@/components/layout/week-nav";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import {
   Table,
   TableBody,
@@ -41,33 +41,9 @@ export default async function UrenPage({
     hoursByUser.set(shift.assignedUserId, (hoursByUser.get(shift.assignedUserId) ?? 0) + hours);
   }
 
-  const prevWeekKey = toDateKey(shiftWeek(weekStart, -1));
-  const nextWeekKey = toDateKey(shiftWeek(weekStart, 1));
-  const todayWeekKey = toDateKey(getWeekStart(new Date()));
-
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`/uren?week=${prevWeekKey}`}>&larr;</Link>}
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`/uren?week=${todayWeekKey}`}>Deze week</Link>}
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`/uren?week=${nextWeekKey}`}>&rarr;</Link>}
-        />
-        <span className="ml-2 text-sm font-medium">{formatWeekRangeLabel(weekStart)}</span>
-      </div>
+      <WeekNav basePath="/uren" weekStart={weekStart} />
 
       <div className="rounded-md border bg-card">
         <Table>
@@ -86,7 +62,12 @@ export default async function UrenPage({
               const diff = contract != null ? hours - contract : null;
               return (
                 <TableRow key={member.id}>
-                  <TableCell className="font-medium">{member.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2.5">
+                      <UserAvatar name={member.name} />
+                      {member.name}
+                    </div>
+                  </TableCell>
                   <TableCell>{formatHours(hours)} uur</TableCell>
                   <TableCell>{contract != null ? `${formatHours(contract)} uur` : "—"}</TableCell>
                   <TableCell>

@@ -1,4 +1,6 @@
-import { formatDayLabel, formatTime, getWeekDays, parseDateKey, toDateKey } from "@/lib/dates";
+import { formatTime, getMonthShort, getWeekDays, getWeekdayShort, isToday, parseDateKey, toDateKey } from "@/lib/dates";
+import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import type { LeavePeriod, ShiftItem, StaffRow } from "./types";
 
 const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
@@ -30,32 +32,58 @@ export function StaffWeekGrid({
   }
 
   return (
-    <div className="overflow-x-auto rounded-md border bg-card">
-      <table className="w-full min-w-[900px] border-collapse text-sm">
+    <div className="overflow-x-auto rounded-xl border bg-card">
+      <table className="w-full min-w-[960px] border-collapse text-sm">
         <thead>
-          <tr className="border-b bg-muted/40">
-            <th className="w-48 border-r p-3 text-left font-medium">Medewerker</th>
-            {days.map((day) => (
-              <th key={day.toISOString()} className="border-r p-3 text-left font-medium capitalize last:border-r-0">
-                {formatDayLabel(day)}
-              </th>
-            ))}
+          <tr className="border-b">
+            <th className="w-52 border-r p-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Medewerker
+            </th>
+            {days.map((day) => {
+              const today = isToday(day);
+              return (
+                <th
+                  key={day.toISOString()}
+                  className={cn(
+                    "min-w-[128px] border-r p-3 text-left align-top last:border-r-0",
+                    today && "bg-accent/50"
+                  )}
+                >
+                  <div className="text-[11px] font-semibold tracking-wide text-muted-foreground">
+                    {getWeekdayShort(day)}
+                  </div>
+                  <div className={cn("text-xl font-semibold leading-tight", today ? "text-primary" : "text-foreground")}>
+                    {day.getUTCDate()}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">{getMonthShort(day)}</div>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
           {staff.map((member) => (
             <tr key={member.id} className="border-b last:border-b-0">
-              <td className="border-r p-3 font-medium align-top">{member.name}</td>
+              <td className="border-r p-3 align-top">
+                <div className="flex items-center gap-2.5">
+                  <UserAvatar name={member.name} />
+                  <span className="font-medium">{member.name}</span>
+                </div>
+              </td>
               {days.map((day) => {
                 const dateKey = toDateKey(day);
                 const cellShifts = shiftsByCell.get(`${member.id}_${dateKey}`) ?? [];
                 const leave = leaveFor(member.id, dateKey);
+                const today = isToday(day);
                 return (
-                  <td key={dateKey} className="min-h-16 border-r p-1.5 align-top last:border-r-0">
+                  <td
+                    key={dateKey}
+                    className={cn("min-h-16 border-r p-1.5 align-top last:border-r-0", today && "bg-accent/15")}
+                  >
                     <div className="flex flex-col gap-1">
                       {leave && (
                         <div
-                          className="rounded-md px-2 py-1.5 text-xs font-medium text-white"
+                          className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-white shadow-sm"
                           style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
                         >
                           {LEAVE_LABEL[leave.type]}
@@ -64,10 +92,10 @@ export function StaffWeekGrid({
                       {cellShifts.map((shift) => (
                         <div
                           key={shift.id}
-                          className="w-full rounded-md px-2 py-1.5 text-white shadow-sm"
+                          className="w-full rounded-lg px-2.5 py-1.5 text-white shadow-sm"
                           style={{ backgroundColor: shift.functieColor ?? "#64748b" }}
                         >
-                          <div className="text-xs font-medium">
+                          <div className="text-xs font-semibold">
                             {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
                           </div>
                           <div className="text-xs opacity-90">{shift.functieName}</div>

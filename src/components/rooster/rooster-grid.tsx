@@ -1,7 +1,19 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { formatDayLabel, formatTime, getWeekDays, parseDateKey, toDateKey } from "@/lib/dates";
+import { Plus } from "lucide-react";
+import {
+  formatTime,
+  getMonthShort,
+  getWeekDays,
+  getWeekdayShort,
+  isToday,
+  parseDateKey,
+  toDateKey,
+  formatDayLabel,
+} from "@/lib/dates";
+import { cn } from "@/lib/utils";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { ShiftDialog } from "./shift-dialog";
 import type { AvailabilityEntry, FunctieOption, LeavePeriod, ShiftItem, StaffRow } from "./types";
 
@@ -54,56 +66,79 @@ export function RoosterGrid({
   const selectedStaff = staff.find((s) => s.id === selection?.staffId);
 
   return (
-    <div className="overflow-x-auto rounded-md border bg-card">
-      <table className="w-full min-w-[900px] border-collapse text-sm">
+    <div className="overflow-x-auto rounded-xl border bg-card">
+      <table className="w-full min-w-[960px] border-collapse text-sm">
         <thead>
-          <tr className="border-b bg-muted/40">
-            <th className="w-48 border-r p-3 text-left font-medium">Medewerker</th>
-            {days.map((day) => (
-              <th key={day.toISOString()} className="border-r p-3 text-left font-medium capitalize last:border-r-0">
-                {formatDayLabel(day)}
-              </th>
-            ))}
+          <tr className="border-b">
+            <th className="w-52 border-r p-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Medewerker
+            </th>
+            {days.map((day) => {
+              const today = isToday(day);
+              return (
+                <th
+                  key={day.toISOString()}
+                  className={cn(
+                    "min-w-[128px] border-r p-3 text-left align-top last:border-r-0",
+                    today && "bg-accent/50"
+                  )}
+                >
+                  <div className="text-[11px] font-semibold tracking-wide text-muted-foreground">
+                    {getWeekdayShort(day)}
+                  </div>
+                  <div className={cn("text-xl font-semibold leading-tight", today ? "text-primary" : "text-foreground")}>
+                    {day.getUTCDate()}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">{getMonthShort(day)}</div>
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
           {staff.map((member) => (
             <tr key={member.id} className="border-b last:border-b-0">
-              <td className="border-r p-3 font-medium align-top">{member.name}</td>
+              <td className="border-r p-3 align-top">
+                <div className="flex items-center gap-2.5">
+                  <UserAvatar name={member.name} />
+                  <span className="font-medium">{member.name}</span>
+                </div>
+              </td>
               {days.map((day) => {
                 const dateKey = toDateKey(day);
                 const cellShifts = shiftsByCell.get(`${member.id}_${dateKey}`) ?? [];
                 const leave = leaveFor(member.id, dateKey);
                 const availabilityEntry = availabilityByCell.get(`${member.id}_${dateKey}`);
+                const today = isToday(day);
                 return (
                   <td
                     key={dateKey}
-                    className="min-h-16 border-r p-1.5 align-top last:border-r-0"
+                    className={cn("min-h-16 border-r p-1.5 align-top last:border-r-0", today && "bg-accent/15")}
                   >
                     {leave && (
                       <div
-                        className="mb-1 rounded-md px-2 py-1 text-xs font-medium text-white"
+                        className="mb-1 rounded-lg px-2 py-1.5 text-xs font-medium text-white shadow-sm"
                         style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
                       >
                         {LEAVE_LABEL[leave.type]}
                       </div>
                     )}
                     {!leave && availabilityEntry?.status === "UNAVAILABLE" && (
-                      <div className="mb-1 rounded-md bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
+                      <div className="mb-1 rounded-lg bg-destructive/10 px-2 py-1 text-xs font-medium text-destructive">
                         Niet beschikbaar
                       </div>
                     )}
                     {!leave && availabilityEntry?.status === "PREFERRED" && (
-                      <div className="mb-1 rounded-md bg-emerald-600/10 px-2 py-1 text-xs font-medium text-emerald-700">
+                      <div className="mb-1 rounded-lg bg-emerald-600/10 px-2 py-1 text-xs font-medium text-emerald-700">
                         Voorkeur
                       </div>
                     )}
                     <button
                       type="button"
                       onClick={() => setSelection({ staffId: member.id, dateKey, shift: null })}
-                      className="mb-1 flex w-full min-h-14 items-center justify-center rounded-md border border-dashed border-transparent text-muted-foreground hover:border-border hover:bg-accent/50"
+                      className="mb-1 flex min-h-14 w-full items-center justify-center rounded-lg border border-dashed border-transparent text-muted-foreground hover:border-border hover:bg-accent/40"
                     >
-                      {cellShifts.length === 0 && <span className="text-lg leading-none">+</span>}
+                      {cellShifts.length === 0 && <Plus className="size-4" strokeWidth={2} />}
                     </button>
                     <div className="flex flex-col gap-1">
                       {cellShifts.map((shift) => (
@@ -111,13 +146,13 @@ export function RoosterGrid({
                           key={shift.id}
                           type="button"
                           onClick={() => setSelection({ staffId: member.id, dateKey, shift })}
-                          className="w-full rounded-md px-2 py-1.5 text-left text-white shadow-sm"
+                          className="w-full rounded-lg px-2.5 py-1.5 text-left text-white shadow-sm transition-transform hover:-translate-y-px"
                           style={{
                             backgroundColor: shift.functieColor ?? "#64748b",
-                            opacity: shift.status === "DRAFT" ? 0.6 : 1,
+                            opacity: shift.status === "DRAFT" ? 0.55 : 1,
                           }}
                         >
-                          <div className="text-xs font-medium">
+                          <div className="text-xs font-semibold">
                             {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
                           </div>
                           <div className="text-xs opacity-90">

@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { toggleStaffActive, regenerateInvite } from "@/app/(admin)/medewerkers/actions";
 import { InviteLinkBanner } from "./invite-link-banner";
 
@@ -51,7 +52,12 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
           <TableBody>
             {staff.map((member) => (
               <TableRow key={member.id}>
-                <TableCell className="font-medium">{member.name}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2.5">
+                    <UserAvatar name={member.name} />
+                    {member.name}
+                  </div>
+                </TableCell>
                 <TableCell className="text-muted-foreground">{member.email}</TableCell>
                 <TableCell>{member.functieNames.join(", ") || "—"}</TableCell>
                 <TableCell>{member.contractHoursPerWeek ?? "—"}</TableCell>

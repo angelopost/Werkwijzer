@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { formatWeekRangeLabel, getWeekDays, getWeekStart, parseDateKey, shiftWeek, toDateKey } from "@/lib/dates";
+import { getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
 import { RoosterGrid } from "@/components/rooster/rooster-grid";
 import { Button } from "@/components/ui/button";
+import { WeekNav } from "@/components/layout/week-nav";
 import { publishWeek } from "./actions";
 
 export default async function RoosterPage({
@@ -35,34 +35,11 @@ export default async function RoosterPage({
   ]);
 
   const hasDraft = shifts.some((s) => s.status === "DRAFT");
-  const prevWeekKey = toDateKey(shiftWeek(weekStart, -1));
-  const nextWeekKey = toDateKey(shiftWeek(weekStart, 1));
-  const todayWeekKey = toDateKey(getWeekStart(new Date()));
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={`/rooster?week=${prevWeekKey}`}>&larr;</Link>}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={`/rooster?week=${todayWeekKey}`}>Deze week</Link>}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={<Link href={`/rooster?week=${nextWeekKey}`}>&rarr;</Link>}
-          />
-          <span className="ml-2 text-sm font-medium">{formatWeekRangeLabel(weekStart)}</span>
-        </div>
+        <WeekNav basePath="/rooster" weekStart={weekStart} />
         <form action={publishWeek.bind(null, weekStartKey)}>
           <Button type="submit" disabled={!hasDraft}>
             {hasDraft ? "Publiceren" : "Gepubliceerd"}

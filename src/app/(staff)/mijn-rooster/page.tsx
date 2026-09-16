@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { formatWeekRangeLabel, getWeekDays, getWeekStart, parseDateKey, shiftWeek, toDateKey } from "@/lib/dates";
+import { getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
 import { StaffWeekGrid } from "@/components/rooster/staff-week-grid";
-import { Button } from "@/components/ui/button";
+import { WeekNav } from "@/components/layout/week-nav";
 
 export default async function MijnRoosterPage({
   searchParams,
@@ -30,33 +29,9 @@ export default async function MijnRoosterPage({
     }),
   ]);
 
-  const prevWeekKey = toDateKey(shiftWeek(weekStart, -1));
-  const nextWeekKey = toDateKey(shiftWeek(weekStart, 1));
-  const todayWeekKey = toDateKey(getWeekStart(new Date()));
-
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`/mijn-rooster?week=${prevWeekKey}`}>&larr;</Link>}
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`/mijn-rooster?week=${todayWeekKey}`}>Deze week</Link>}
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`/mijn-rooster?week=${nextWeekKey}`}>&rarr;</Link>}
-        />
-        <span className="ml-2 text-sm font-medium">{formatWeekRangeLabel(weekStart)}</span>
-      </div>
+      <WeekNav basePath="/mijn-rooster" weekStart={weekStart} />
 
       <StaffWeekGrid
         weekStartKey={weekStartKey}

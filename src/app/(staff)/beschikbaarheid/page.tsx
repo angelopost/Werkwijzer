@@ -1,8 +1,7 @@
-import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { formatDayLabel, formatWeekRangeLabel, getWeekDays, getWeekStart, parseDateKey, shiftWeek, toDateKey } from "@/lib/dates";
-import { Button } from "@/components/ui/button";
+import { formatDayLabel, getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
+import { WeekNav } from "@/components/layout/week-nav";
 import { AvailabilityWeekForm } from "./availability-week-form";
 
 export default async function BeschikbaarheidPage({
@@ -25,33 +24,9 @@ export default async function BeschikbaarheidPage({
   });
   const byDate = new Map(records.map((r) => [toDateKey(r.date), r]));
 
-  const prevWeekKey = toDateKey(shiftWeek(weekStart, -1));
-  const nextWeekKey = toDateKey(shiftWeek(weekStart, 1));
-  const todayWeekKey = toDateKey(getWeekStart(new Date()));
-
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`/beschikbaarheid?week=${prevWeekKey}`}>&larr;</Link>}
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`/beschikbaarheid?week=${todayWeekKey}`}>Deze week</Link>}
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          nativeButton={false}
-          render={<Link href={`/beschikbaarheid?week=${nextWeekKey}`}>&rarr;</Link>}
-        />
-        <span className="ml-2 text-sm font-medium">{formatWeekRangeLabel(weekStart)}</span>
-      </div>
+      <WeekNav basePath="/beschikbaarheid" weekStart={weekStart} />
 
       <p className="text-sm text-muted-foreground">
         Geef per dag aan of je beschikbaar bent. De beheerder ziet dit als hulp bij het inplannen, maar kan

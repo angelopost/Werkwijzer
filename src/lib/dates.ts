@@ -59,6 +59,18 @@ export function formatDayLabel(date: Date): string {
   return `${weekday} ${date.getUTCDate()} ${MONTH_LABELS[date.getUTCMonth()]}`;
 }
 
+export function getWeekdayShort(date: Date): string {
+  return WEEKDAY_LABELS[(date.getUTCDay() + 6) % 7].toUpperCase();
+}
+
+export function getMonthShort(date: Date): string {
+  return MONTH_LABELS[date.getUTCMonth()];
+}
+
+export function isToday(date: Date): boolean {
+  return toDateKey(date) === toDateKey(new Date());
+}
+
 export function formatWeekRangeLabel(weekStart: Date): string {
   const weekEnd = addUTCDays(weekStart, 6);
   const sameMonth = weekStart.getUTCMonth() === weekEnd.getUTCMonth();
