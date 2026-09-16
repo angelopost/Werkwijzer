@@ -70,7 +70,7 @@ export function LeaveDialog({
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="flex flex-col gap-2">
               <Label htmlFor="startDate">Startdatum</Label>
               <Input id="startDate" name="startDate" type="date" required defaultValue={leave.startDate} />
