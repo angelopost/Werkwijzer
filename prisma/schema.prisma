@@ -77,6 +77,8 @@ model User {
   reviewedTimeEntries    TimeEntry[]        @relation("TimeEntryReviewer")
   assignedTodos          Todo[]             @relation("TodoAssignee")
   createdTodos           Todo[]             @relation("TodoCreatedBy")
+  permanentTodos          PermanentTodo[]   @relation("PermanentTodoAssignee")
+  createdPermanentTodos   PermanentTodo[]   @relation("PermanentTodoCreatedBy")
 }
 
 model Invite {
@@ -228,10 +230,50 @@ model Todo {
   createdById String
   createdBy   User         @relation("TodoCreatedBy", fields: [createdById], references: [id])
 
+  permanentTodoId String?
+  permanentTodo   PermanentTodo? @relation(fields: [permanentTodoId], references: [id], onDelete: SetNull)
+
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   @@index([date])
+}
+
+/// Vast to-do-patroon: komt vanaf een gekozen datum elke week op dezelfde weekdag
+/// terug, zonder voorgaande weken met terugwerkende kracht te vullen. Zelfde opzet
+/// als PermanentShift.
+model PermanentTodo {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  weekday     Int          // 0 = maandag … 6 = zondag
+  priority    TodoPriority @default(NORMAAL)
+
+  assigneeId  String?
+  assignee    User?        @relation("PermanentTodoAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  activeFrom  DateTime     @db.Date
+
+  createdById String
+  createdBy   User         @relation("PermanentTodoCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime     @default(now())
+
+  todos       Todo[]
+  exceptions  PermanentTodoException[]
+
+  @@index([assigneeId, weekday])
+}
+
+/// Een specifieke datum die is uitgesloten van een vast to-do-patroon (bv. omdat de
+/// beheerder die ene dag heeft verwijderd).
+model PermanentTodoException {
+  id              String        @id @default(cuid())
+  permanentTodoId String
+  permanentTodo   PermanentTodo @relation(fields: [permanentTodoId], references: [id], onDelete: Cascade)
+  date            DateTime      @db.Date
+  createdAt       DateTime      @default(now())
+
+  @@unique([permanentTodoId, date])
 }
 
 model Notification {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { Plus, Repeat } from "lucide-react";
 import { addUTCDays, formatDayLabel, isToday, toDateKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ const PRIORITY_BADGE_VARIANT: Record<TodoPriority, "destructive" | "default" | "
 
 export function TodoBoard({ todos, staff }: { todos: TodoItem[]; staff: TodoStaffOption[] }) {
   const today = new Date();
+  const todayKey = toDateKey(today);
   const days = Array.from({ length: 7 }, (_, i) => addUTCDays(today, i));
 
   const [selection, setSelection] = useState<{ dateKey: string; todo: TodoItem | null } | null>(null);
@@ -39,65 +40,70 @@ export function TodoBoard({ todos, staff }: { todos: TodoItem[]; staff: TodoStaf
   }
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-2">
-      {days.map((day) => {
-        const dateKey = toDateKey(day);
-        const dayTodos = todosByDay.get(dateKey) ?? [];
-        const label = isToday(day) ? "Vandaag" : formatDayLabel(day);
-        return (
-          <div key={dateKey} className="flex w-64 shrink-0 flex-col rounded-xl border bg-card">
-            <div className="flex items-center justify-between border-b p-3">
-              <span className="text-sm font-semibold">{label}</span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => setSelection({ dateKey, todo: null })}
-                aria-label="To do toevoegen"
-              >
-                <Plus />
-              </Button>
-            </div>
-            <div className="flex flex-1 flex-col gap-2 p-2.5">
-              {dayTodos.map((todo) => (
-                <div
-                  key={todo.id}
-                  onClick={() => setSelection({ dateKey, todo })}
-                  className="flex cursor-pointer items-start gap-2 rounded-lg border bg-background p-2.5 shadow-sm transition-transform hover:-translate-y-px"
-                >
-                  <Checkbox
-                    checked={todo.completed}
-                    onClick={(e) => e.stopPropagation()}
-                    onCheckedChange={() => handleToggle(todo.id)}
-                    className="mt-0.5"
-                  />
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <p
-                      className={cn(
-                        "text-sm font-medium break-words",
-                        todo.completed && "text-muted-foreground line-through"
-                      )}
-                    >
-                      {todo.title}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <Badge variant={PRIORITY_BADGE_VARIANT[todo.priority]}>
-                        {PRIORITY_LABEL[todo.priority]}
-                      </Badge>
-                      {todo.assigneeName && (
-                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <UserAvatar name={todo.assigneeName} className="size-4 text-[9px]" />
-                          {todo.assigneeName}
-                        </span>
-                      )}
+    <div className="flex flex-col gap-4">
+      <Button
+        type="button"
+        onClick={() => setSelection({ dateKey: todayKey, todo: null })}
+        className="self-start"
+      >
+        <Plus data-icon="inline-start" />
+        To do toevoegen
+      </Button>
+
+      <div className="flex gap-4 overflow-x-auto pb-2">
+        {days.map((day) => {
+          const dateKey = toDateKey(day);
+          const dayTodos = todosByDay.get(dateKey) ?? [];
+          const label = isToday(day) ? "Vandaag" : formatDayLabel(day);
+          return (
+            <div key={dateKey} className="flex w-64 shrink-0 flex-col rounded-xl border bg-card">
+              <div className="border-b p-3">
+                <span className="text-sm font-semibold">{label}</span>
+              </div>
+              <div className="flex flex-1 flex-col gap-2 p-2.5">
+                {dayTodos.map((todo) => (
+                  <div
+                    key={todo.id}
+                    onClick={() => setSelection({ dateKey, todo })}
+                    className="flex cursor-pointer items-start gap-2 rounded-lg border bg-background p-2.5 shadow-sm transition-transform hover:-translate-y-px"
+                  >
+                    <Checkbox
+                      checked={todo.completed}
+                      onClick={(e) => e.stopPropagation()}
+                      onCheckedChange={() => handleToggle(todo.id)}
+                      className="mt-0.5"
+                    />
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <p
+                        className={cn(
+                          "flex items-center gap-1 text-sm font-medium break-words",
+                          todo.completed && "text-muted-foreground line-through"
+                        )}
+                      >
+                        {todo.permanentTodoId && (
+                          <Repeat className="size-3 shrink-0 text-muted-foreground" strokeWidth={2.5} />
+                        )}
+                        {todo.title}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Badge variant={PRIORITY_BADGE_VARIANT[todo.priority]}>
+                          {PRIORITY_LABEL[todo.priority]}
+                        </Badge>
+                        {todo.assigneeName && (
+                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <UserAvatar name={todo.assigneeName} className="size-4 text-[9px]" />
+                            {todo.assigneeName}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {selection && (
         <TodoDialog

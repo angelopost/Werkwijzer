@@ -6,6 +6,7 @@ export const todoFormSchema = z.object({
   date: z.string().min(1, { error: "Datum is verplicht" }),
   assigneeId: z.string().optional(),
   priority: z.enum(["DRINGEND", "NORMAAL", "NIET_DRINGEND"]),
+  permanent: z.coerce.boolean().optional().default(false),
 });
 
 export type TodoFormValues = z.infer<typeof todoFormSchema>;
