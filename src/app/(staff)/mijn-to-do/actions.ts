@@ -20,9 +20,10 @@ export async function markTodoCompletedBy(todoId: string, completedById: string 
     if (!validStaff) return;
   }
 
+  const completed = completedById !== null;
   await prisma.todo.update({
     where: { id: todoId },
-    data: { completedById, completed: completedById !== null },
+    data: { completedById, completed, completedAt: completed ? new Date() : null },
   });
 
   revalidatePath("/mijn-to-do");

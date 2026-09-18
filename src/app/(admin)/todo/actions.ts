@@ -50,6 +50,7 @@ export async function createTodo(
       assigneeId: resolveAssigneeId(data.assigneeId),
       priority: data.priority,
       forStaff,
+      permanentGeneral: date === null && forStaff ? data.permanent : false,
       createdById: admin.id,
     },
   });
@@ -102,6 +103,7 @@ export async function updateTodo(
       date,
       assigneeId: resolveAssigneeId(data.assigneeId),
       priority: data.priority,
+      permanentGeneral: date === null && forStaff ? data.permanent : false,
     },
   });
 
@@ -129,7 +131,11 @@ export async function toggleTodoCompleted(todoId: string) {
   const completed = !todo.completed;
   await prisma.todo.update({
     where: { id: todoId },
-    data: { completed, completedById: completed ? todo.completedById : null },
+    data: {
+      completed,
+      completedById: completed ? todo.completedById : null,
+      completedAt: completed ? new Date() : null,
+    },
   });
   revalidateTodoPaths();
 }

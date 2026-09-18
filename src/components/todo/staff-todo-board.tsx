@@ -18,6 +18,12 @@ const PRIORITY_BADGE_VARIANT: Record<TodoPriority, "destructive" | "default" | "
   NIET_DRINGEND: "secondary",
 };
 
+/** Afgeronde to do's zakken naar onderen, zodat ze niet in de weg staan.
+ * Array.sort is stabiel, dus de volgorde binnen elke groep blijft behouden. */
+function sortWithCompletedLast(list: TodoItem[]): TodoItem[] {
+  return [...list].sort((a, b) => Number(a.completed) - Number(b.completed));
+}
+
 function StaffTodoCard({
   todo,
   onClick,
@@ -45,13 +51,15 @@ function StaffTodoCard({
             todo.completed && "text-muted-foreground line-through"
           )}
         >
-          {todo.permanentTodoId && (
+          {(todo.permanentTodoId || todo.permanentGeneral) && (
             <Repeat className="size-3 shrink-0 text-muted-foreground" strokeWidth={2.5} />
           )}
           {todo.title}
         </p>
         <div className="flex flex-wrap items-center gap-1.5">
-          <Badge variant={PRIORITY_BADGE_VARIANT[todo.priority]}>{PRIORITY_LABEL[todo.priority]}</Badge>
+          {!todo.completed && (
+            <Badge variant={PRIORITY_BADGE_VARIANT[todo.priority]}>{PRIORITY_LABEL[todo.priority]}</Badge>
+          )}
           {todo.assigneeName && (
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <UserAvatar name={todo.assigneeName} className="size-4 text-[9px]" />
@@ -107,7 +115,7 @@ export function StaffTodoBoard({
       <div className="flex gap-4 overflow-x-auto pb-2">
         {days.map((day, index) => {
           const dateKey = dayKeys[index];
-          const dayTodos = todosByDay.get(dateKey) ?? [];
+          const dayTodos = sortWithCompletedLast(todosByDay.get(dateKey) ?? []);
           const label = isToday(day) ? "Vandaag" : formatDayLabel(day);
           return (
             <div key={dateKey} className="flex w-64 shrink-0 flex-col rounded-xl border bg-card">
@@ -138,7 +146,7 @@ export function StaffTodoBoard({
           Zonder vaste datum — kan gedaan worden wanneer het uitkomt.
         </p>
         <div className="flex flex-col gap-2 rounded-xl border bg-card p-2.5">
-          {generalTodos.map((todo) => (
+          {sortWithCompletedLast(generalTodos).map((todo) => (
             <StaffTodoCard
               key={todo.id}
               todo={todo}

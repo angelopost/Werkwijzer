@@ -193,6 +193,13 @@ export function TodoDialog({
             </Select>
           </div>
 
+          {isGeneral && forStaff && (
+            <label className="flex items-center gap-2.5 rounded-lg border p-3 text-sm">
+              <Checkbox name="permanent" defaultChecked={todo?.permanentGeneral ?? false} />
+              <span className="font-medium">Permanent</span>
+            </label>
+          )}
+
           {!isGeneral &&
             (canMakePermanent ? (
               <label className="flex items-center gap-2.5 rounded-lg border p-3 text-sm">

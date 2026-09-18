@@ -46,7 +46,7 @@ function TodoCard({
             todo.completed && "text-muted-foreground line-through"
           )}
         >
-          {todo.permanentTodoId && (
+          {(todo.permanentTodoId || todo.permanentGeneral) && (
             <Repeat className="size-3 shrink-0 text-muted-foreground" strokeWidth={2.5} />
           )}
           {todo.title}

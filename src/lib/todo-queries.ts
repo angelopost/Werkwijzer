@@ -2,6 +2,36 @@ import { prisma } from "@/lib/db";
 import { toDateKey } from "@/lib/dates";
 import type { TodoItem } from "@/components/todo/types";
 
+const GENERAL_TODO_RETENTION_MS = 3 * 24 * 60 * 60 * 1000;
+
+/** Algemene (datumloze) to do's voor medewerkers die 3+ dagen geleden zijn
+ * afgerond: een permanente wordt gereset (blijft bestaan, telt weer als nieuw),
+ * de rest wordt definitief verwijderd. */
+async function processExpiredStaffGeneralTodos() {
+  const cutoff = new Date(Date.now() - GENERAL_TODO_RETENTION_MS);
+
+  await prisma.todo.updateMany({
+    where: {
+      forStaff: true,
+      date: null,
+      permanentGeneral: true,
+      completed: true,
+      completedAt: { lte: cutoff },
+    },
+    data: { completed: false, completedById: null, completedAt: null, priority: "NORMAAL" },
+  });
+
+  await prisma.todo.deleteMany({
+    where: {
+      forStaff: true,
+      date: null,
+      permanentGeneral: false,
+      completed: true,
+      completedAt: { lte: cutoff },
+    },
+  });
+}
+
 /** Haalt de to do's op voor een weekbereik (of enkele dag) plus alle algemene
  * to do's zonder datum, die ongeacht het geselecteerde bereik altijd meetellen. */
 export async function fetchTodoBoardItems(params: {
@@ -10,6 +40,10 @@ export async function fetchTodoBoardItems(params: {
   forStaff: boolean;
 }): Promise<TodoItem[]> {
   const { from, to, forStaff } = params;
+
+  if (forStaff) {
+    await processExpiredStaffGeneralTodos();
+  }
 
   const [dayTodos, generalTodos] = await Promise.all([
     prisma.todo.findMany({
@@ -36,5 +70,6 @@ export async function fetchTodoBoardItems(params: {
     completedById: t.completedById,
     completedByName: t.completedBy?.name ?? null,
     permanentTodoId: t.permanentTodoId,
+    permanentGeneral: t.permanentGeneral,
   }));
 }

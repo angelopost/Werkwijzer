@@ -12,6 +12,7 @@ export type TodoItem = {
   completedById: string | null;
   completedByName: string | null;
   permanentTodoId: string | null;
+  permanentGeneral: boolean;
 };
 
 export type TodoStaffOption = {

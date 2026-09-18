@@ -228,12 +228,17 @@ model Todo {
   completed   Boolean      @default(false)
   forStaff    Boolean      @default(false)
 
+  /// Alleen relevant voor een algemene (date = null) forStaff-to do: blijft na
+  /// afronden bestaan en wordt na 3 dagen automatisch gereset i.p.v. verwijderd.
+  permanentGeneral Boolean @default(false)
+
   assigneeId  String?
   assignee    User?        @relation("TodoAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
 
   /// Medewerker die (bij een forStaff-to do) zichzelf als uitvoerder heeft opgegeven.
   completedById String?
   completedBy   User?      @relation("TodoCompletedBy", fields: [completedById], references: [id], onDelete: SetNull)
+  completedAt   DateTime?
 
   createdById String
   createdBy   User         @relation("TodoCreatedBy", fields: [createdById], references: [id])
