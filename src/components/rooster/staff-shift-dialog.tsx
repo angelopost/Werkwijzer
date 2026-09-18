@@ -19,15 +19,25 @@ export function StaffShiftDialog({
   dateLabel: string;
   shift: ShiftItem;
 }) {
+  const notes = [shift.notes, shift.correctionNote].filter(Boolean) as string[];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Notities — {dateLabel}</DialogTitle>
         </DialogHeader>
-        <p className="text-sm whitespace-pre-wrap">
-          {shift.notes || <span className="text-muted-foreground">Geen notities toegevoegd.</span>}
-        </p>
+        {notes.length > 0 ? (
+          <div className="flex flex-col gap-3 text-sm">
+            {notes.map((note, i) => (
+              <p key={i} className="whitespace-pre-wrap">
+                {note}
+              </p>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Geen notities toegevoegd.</p>
+        )}
       </DialogContent>
     </Dialog>
   );

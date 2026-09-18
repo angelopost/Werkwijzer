@@ -13,5 +13,6 @@ export const ADMIN_NAV: NavLink[] = [
 export const STAFF_NAV: NavLink[] = [
   { href: "/mijn-rooster", label: "Mijn rooster", icon: "calendar" },
   { href: "/mijn-inklok", label: "Inklokken", icon: "timer" },
+  { href: "/mijn-uren", label: "Mijn uren", icon: "clock" },
   { href: "/verlof", label: "Verlof", icon: "file" },
 ];

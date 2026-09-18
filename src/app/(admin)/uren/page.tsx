@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
-import { getWeekDays, getWeekStart, parseDateKey } from "@/lib/dates";
+import { addUTCDays, formatDayLabel, getWeekStart, parseDateKey } from "@/lib/dates";
 import { formatDuration, shiftHours } from "@/lib/hours";
-import { WeekNav } from "@/components/layout/week-nav";
+import { PeriodFilter } from "@/components/layout/period-filter";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import {
   Table,
@@ -15,13 +15,12 @@ import {
 export default async function UrenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ week?: string }>;
+  searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const params = await searchParams;
-  const weekStart = params.week ? parseDateKey(params.week) : getWeekStart(new Date());
-  const days = getWeekDays(weekStart);
-  const from = days[0];
-  const to = days[6];
+  const defaultFrom = getWeekStart(new Date());
+  const from = params.from ? parseDateKey(params.from) : defaultFrom;
+  const to = params.to ? parseDateKey(params.to) : addUTCDays(defaultFrom, 6);
 
   const [staff, shifts] = await Promise.all([
     prisma.user.findMany({
@@ -42,14 +41,18 @@ export default async function UrenPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <WeekNav basePath="/uren" weekStart={weekStart} />
+      <PeriodFilter />
+
+      <p className="text-sm text-muted-foreground">
+        {formatDayLabel(from)} t/m {formatDayLabel(to)}
+      </p>
 
       <div className="rounded-md border bg-card">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Medewerker</TableHead>
-              <TableHead>Geplande uren</TableHead>
+              <TableHead>Gewerkte uren</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -79,7 +82,8 @@ export default async function UrenPage({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Gebaseerd op gepubliceerde diensten deze week. Concept-diensten tellen nog niet mee.
+        Gebaseerd op gepubliceerde diensten in de gekozen periode. Concept-diensten tellen nog
+        niet mee.
       </p>
     </div>
   );
