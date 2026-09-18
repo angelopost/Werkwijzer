@@ -123,6 +123,25 @@ export function formatClockTime(date: Date): string {
   }).format(date);
 }
 
+/** UTC-bereik dat overeenkomt met een kalenderdag (00:00–24:00) in Europe/Amsterdam,
+ * voor het filteren van échte tijdstippen zoals TimeEntry.clockIn op "die dag". */
+export function getAmsterdamDayRangeUtc(dateKey: string): { start: Date; end: Date } {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const utcMidnightGuess = new Date(Date.UTC(y, m - 1, d, 0, 0, 0));
+
+  const offsetName = new Intl.DateTimeFormat("en-US", {
+    timeZone: AMSTERDAM_TZ,
+    timeZoneName: "shortOffset",
+  })
+    .formatToParts(utcMidnightGuess)
+    .find((p) => p.type === "timeZoneName")?.value;
+  const offsetHours = Number(offsetName?.match(/GMT([+-]\d+)/)?.[1] ?? 1);
+
+  const start = new Date(utcMidnightGuess.getTime() - offsetHours * 3_600_000);
+  const end = new Date(start.getTime() + 24 * 3_600_000);
+  return { start, end };
+}
+
 /** Waarde voor een <input type="datetime-local">, gebaseerd op de lokale tijd van de
  * browser (mag alleen client-side gebruikt worden — de server heeft een andere lokale tijd). */
 export function toDatetimeLocalValue(date: Date): string {

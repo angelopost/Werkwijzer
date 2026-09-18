@@ -3,34 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { clockInUser, clockOutUser } from "@/lib/time-entries";
 
 function revalidateInklok() {
   revalidatePath("/inklokken");
   revalidatePath("/mijn-inklok");
-}
-
-export async function clockIn() {
-  const admin = await requireAdmin();
-  const result = await clockInUser(admin.id);
-  revalidateInklok();
-  return result?.error
-    ? { error: result.error }
-    : { entry: { clockIn: result.entry!.clockIn.toISOString(), clockOut: null } };
-}
-
-export async function clockOut() {
-  const admin = await requireAdmin();
-  const result = await clockOutUser(admin.id);
-  revalidateInklok();
-  return result?.error
-    ? { error: result.error }
-    : {
-        entry: {
-          clockIn: result.entry!.clockIn.toISOString(),
-          clockOut: result.entry!.clockOut!.toISOString(),
-        },
-      };
 }
 
 export async function updateTimeEntry(entryId: string, clockInIso: string, clockOutIso: string | null) {

@@ -1,34 +1,40 @@
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/permissions";
-import { ClockButton } from "@/components/inklok/clock-button";
+import { getAmsterdamDayRangeUtc } from "@/lib/dates";
 import { TeamStatus } from "@/components/inklok/team-status";
 import { AdminTimeEntryLog } from "@/components/inklok/admin-time-entry-log";
-import { clockIn, clockOut, updateTimeEntry, deleteTimeEntry } from "./actions";
+import { InklokFilters } from "@/components/inklok/inklok-filters";
+import { updateTimeEntry, deleteTimeEntry } from "./actions";
 
-export default async function InklokkenPage() {
-  const admin = await requireAdmin();
+export default async function InklokkenPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ date?: string; userId?: string }>;
+}) {
+  const params = await searchParams;
 
-  const [openEntry, staff, recentEntries] = await Promise.all([
-    prisma.timeEntry.findFirst({ where: { userId: admin.id, clockOut: null } }),
-    prisma.user.findMany({
-      where: { role: "STAFF", isActive: true },
-      orderBy: { name: "asc" },
-      include: { timeEntries: { where: { clockOut: null }, take: 1 } },
-    }),
-    prisma.timeEntry.findMany({
-      orderBy: { clockIn: "desc" },
-      take: 30,
-      include: { user: true },
-    }),
-  ]);
+  const staff = await prisma.user.findMany({
+    where: { role: "STAFF", isActive: true },
+    orderBy: { name: "asc" },
+    include: { timeEntries: { where: { clockOut: null }, take: 1 } },
+  });
+
+  const entryWhere: { userId?: string; clockIn?: { gte: Date; lt: Date } } = {};
+  if (params.userId) entryWhere.userId = params.userId;
+  if (params.date) {
+    const { start, end } = getAmsterdamDayRangeUtc(params.date);
+    entryWhere.clockIn = { gte: start, lt: end };
+  }
+
+  const recentEntries = await prisma.timeEntry.findMany({
+    where: entryWhere,
+    orderBy: { clockIn: "desc" },
+    take: 100,
+    include: { user: true },
+  });
 
   return (
     <div className="flex flex-col gap-6">
-      <ClockButton
-        initialClockIn={openEntry ? openEntry.clockIn.toISOString() : null}
-        onClockIn={clockIn}
-        onClockOut={clockOut}
-      />
+      <InklokFilters staff={staff.map((s) => ({ id: s.id, name: s.name }))} />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground">Team</h2>
@@ -42,7 +48,7 @@ export default async function InklokkenPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-muted-foreground">Recente registraties</h2>
+        <h2 className="text-sm font-semibold text-muted-foreground">Registraties</h2>
         <AdminTimeEntryLog
           entries={recentEntries.map((e) => ({
             id: e.id,
