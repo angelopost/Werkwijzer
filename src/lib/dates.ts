@@ -108,6 +108,44 @@ export function combineDateAndTime(dateKey: string, time: string): Date {
   return parseISO(`${dateKey}T${time}:00Z`);
 }
 
+const AMSTERDAM_TZ = "Europe/Amsterdam";
+
+/** Formatteert een écht tijdstip (zoals TimeEntry.clockIn/clockOut) als HH:mm in
+ * Europe/Amsterdam. In tegenstelling tot formatTime() — dat een wandklok-label
+ * zonder tijdzone-conversie leest — is dit voor waarden die daadwerkelijk `new Date()`
+ * op het moment van inklokken zijn. */
+export function formatClockTime(date: Date): string {
+  return new Intl.DateTimeFormat("nl-NL", {
+    timeZone: AMSTERDAM_TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+/** Waarde voor een <input type="datetime-local">, gebaseerd op de lokale tijd van de
+ * browser (mag alleen client-side gebruikt worden — de server heeft een andere lokale tijd). */
+export function toDatetimeLocalValue(date: Date): string {
+  const y = date.getFullYear();
+  const m = pad(date.getMonth() + 1);
+  const d = pad(date.getDate());
+  const h = pad(date.getHours());
+  const min = pad(date.getMinutes());
+  return `${y}-${m}-${d}T${h}:${min}`;
+}
+
+/** Daglabel (bv. "wo 16 sep") voor een écht tijdstip, tijdzone-bewust berekend. */
+export function formatClockDayLabel(date: Date): string {
+  const parts = new Intl.DateTimeFormat("nl-NL", {
+    timeZone: AMSTERDAM_TZ,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("weekday").replace(".", "")} ${get("day")} ${get("month").replace(".", "")}`;
+}
+
 /** Nette weergave van een verlof-/ziekteperiode, inclusief tijden als die zijn ingevuld. */
 export function formatLeaveRangeLabel(
   startDate: Date,

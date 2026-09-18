@@ -9,6 +9,7 @@ import {
   Users,
   Clock,
   FileText,
+  Timer,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,7 @@ const ICONS: Record<IconKey, LucideIcon> = {
   users: Users,
   clock: Clock,
   file: FileText,
+  timer: Timer,
 };
 
 export function Sidebar({
