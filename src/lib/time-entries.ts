@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { combineDateAndTime, formatClockTime, getAmsterdamDateKey } from "@/lib/dates";
 
 export async function getOpenTimeEntry(userId: string) {
   return prisma.timeEntry.findFirst({
@@ -26,4 +27,62 @@ export async function clockOutUser(userId: string) {
     data: { clockOut: new Date() },
   });
   return { entry };
+}
+
+export async function submitTimeEntry(userId: string, entryId: string) {
+  const entry = await prisma.timeEntry.findUnique({ where: { id: entryId } });
+  if (!entry || entry.userId !== userId) return { error: "Registratie niet gevonden." as const };
+  if (!entry.clockOut) return { error: "Deze registratie is nog niet uitgeklokt." as const };
+  if (entry.status) return { error: "Deze registratie is al ingediend." as const };
+
+  await prisma.timeEntry.update({
+    where: { id: entryId },
+    data: { status: "PENDING", submittedAt: new Date() },
+  });
+  return { success: true as const };
+}
+
+/** Keurt een ingediende registratie goed. `correctionMinutes` wordt toegepast op de
+ * uitkloktijd (positief = later, negatief = eerder); de inkloktijd blijft ongewijzigd.
+ * Zoekt de geplande Shift van deze medewerker op die dag en werkt die automatisch bij. */
+export async function approveTimeEntry(
+  entryId: string,
+  adminId: string,
+  correctionMinutes: number,
+  reviewNote: string | null
+) {
+  const entry = await prisma.timeEntry.findUnique({ where: { id: entryId } });
+  if (!entry || !entry.clockOut) return { error: "Registratie is niet compleet." as const };
+
+  const adjustedClockOut = new Date(entry.clockOut.getTime() + correctionMinutes * 60_000);
+  if (adjustedClockOut <= entry.clockIn) {
+    return { error: "De aangepaste eindtijd moet na de inkloktijd liggen." as const };
+  }
+
+  const dateKey = getAmsterdamDateKey(entry.clockIn);
+  const newStartTime = combineDateAndTime(dateKey, formatClockTime(entry.clockIn));
+  const newEndTime = combineDateAndTime(dateKey, formatClockTime(adjustedClockOut));
+
+  const shift = await prisma.shift.findFirst({
+    where: { assignedUserId: entry.userId, date: new Date(`${dateKey}T00:00:00Z`) },
+  });
+  if (shift) {
+    await prisma.shift.update({
+      where: { id: shift.id },
+      data: { startTime: newStartTime, endTime: newEndTime },
+    });
+  }
+
+  await prisma.timeEntry.update({
+    where: { id: entryId },
+    data: {
+      status: "APPROVED",
+      correctionMinutes,
+      reviewNote,
+      reviewedById: adminId,
+      reviewedAt: new Date(),
+    },
+  });
+
+  return { success: true as const, matchedShift: Boolean(shift) };
 }

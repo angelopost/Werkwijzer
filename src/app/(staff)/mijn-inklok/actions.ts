@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/permissions";
-import { clockInUser, clockOutUser } from "@/lib/time-entries";
+import { clockInUser, clockOutUser, submitTimeEntry as submitTimeEntryLib } from "@/lib/time-entries";
 
 export async function clockIn() {
   const user = await requireStaff();
@@ -27,4 +27,12 @@ export async function clockOut() {
           clockOut: result.entry!.clockOut!.toISOString(),
         },
       };
+}
+
+export async function submitTimeEntry(entryId: string) {
+  const user = await requireStaff();
+  const result = await submitTimeEntryLib(user.id, entryId);
+  revalidatePath("/mijn-inklok");
+  revalidatePath("/goedkeuringen");
+  return result;
 }

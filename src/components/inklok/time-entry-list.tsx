@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatClockDayLabel, formatClockTime } from "@/lib/dates";
 import { durationHours, formatHours } from "@/lib/hours";
@@ -18,20 +19,31 @@ export type TimeEntryRow = {
   clockIn: string;
   clockOut: string | null;
   employeeName?: string;
+  status?: "PENDING" | "APPROVED" | null;
+  correctionMinutes?: number | null;
+  reviewNote?: string | null;
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  PENDING: "In afwachting",
+  APPROVED: "Goedgekeurd",
 };
 
 export function TimeEntryList({
   entries,
   onSelect,
+  onSubmit,
 }: {
   entries: TimeEntryRow[];
   onSelect?: (entry: TimeEntryRow) => void;
+  onSubmit?: (entryId: string) => void;
 }) {
   if (entries.length === 0) {
     return <p className="text-sm text-muted-foreground">Nog geen in-/uitklokregistraties.</p>;
   }
 
   const showEmployee = entries.some((e) => e.employeeName !== undefined);
+  const showStatus = onSubmit !== undefined || entries.some((e) => e.status);
 
   return (
     <div className="rounded-md border bg-card">
@@ -43,6 +55,7 @@ export function TimeEntryList({
             <TableHead>Ingeklokt</TableHead>
             <TableHead>Uitgeklokt</TableHead>
             <TableHead>Duur</TableHead>
+            {showStatus && <TableHead>Status</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -70,6 +83,36 @@ export function TimeEntryList({
                 <TableCell>
                   {clockOut ? `${formatHours(durationHours(clockIn, clockOut))} uur` : "—"}
                 </TableCell>
+                {showStatus && (
+                  <TableCell>
+                    {entry.status ? (
+                      <div className="flex flex-col gap-0.5">
+                        <Badge variant={entry.status === "APPROVED" ? "default" : "secondary"}>
+                          {STATUS_LABEL[entry.status]}
+                        </Badge>
+                        {entry.status === "APPROVED" && !!entry.correctionMinutes && (
+                          <span className="text-xs text-muted-foreground">
+                            Correctie: {entry.correctionMinutes > 0 ? "+" : ""}
+                            {entry.correctionMinutes} min
+                          </span>
+                        )}
+                      </div>
+                    ) : clockOut && onSubmit ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSubmit(entry.id);
+                        }}
+                      >
+                        Indienen
+                      </Button>
+                    ) : (
+                      "—"
+                    )}
+                  </TableCell>
+                )}
               </TableRow>
             );
           })}

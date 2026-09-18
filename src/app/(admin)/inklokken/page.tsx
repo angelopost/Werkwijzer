@@ -55,6 +55,9 @@ export default async function InklokkenPage({
             clockIn: e.clockIn.toISOString(),
             clockOut: e.clockOut ? e.clockOut.toISOString() : null,
             employeeName: e.user.name,
+            status: e.status,
+            correctionMinutes: e.correctionMinutes,
+            reviewNote: e.reviewNote,
           }))}
           onSave={updateTimeEntry}
           onDelete={deleteTimeEntry}

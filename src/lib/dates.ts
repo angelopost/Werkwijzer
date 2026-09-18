@@ -142,6 +142,19 @@ export function getAmsterdamDayRangeUtc(dateKey: string): { start: Date; end: Da
   return { start, end };
 }
 
+/** Kalenderdag (YYYY-MM-DD) in Europe/Amsterdam voor een écht tijdstip — het omgekeerde
+ * van getAmsterdamDayRangeUtc(), gebruikt om een TimeEntry aan de juiste Shift.date te koppelen. */
+export function getAmsterdamDateKey(date: Date): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: AMSTERDAM_TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
 /** Waarde voor een <input type="datetime-local">, gebaseerd op de lokale tijd van de
  * browser (mag alleen client-side gebruikt worden — de server heeft een andere lokale tijd). */
 export function toDatetimeLocalValue(date: Date): string {

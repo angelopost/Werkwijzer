@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/db";
 import { requireStaff } from "@/lib/permissions";
 import { ClockButton } from "@/components/inklok/clock-button";
-import { TimeEntryList } from "@/components/inklok/time-entry-list";
-import { clockIn, clockOut } from "./actions";
+import { StaffTimeEntryLog } from "@/components/inklok/staff-time-entry-log";
+import { clockIn, clockOut, submitTimeEntry } from "./actions";
 
 export default async function MijnInklokPage() {
   const user = await requireStaff();
@@ -26,12 +26,16 @@ export default async function MijnInklokPage() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground">Mijn registraties</h2>
-        <TimeEntryList
+        <StaffTimeEntryLog
           entries={recentEntries.map((e) => ({
             id: e.id,
             clockIn: e.clockIn.toISOString(),
             clockOut: e.clockOut ? e.clockOut.toISOString() : null,
+            status: e.status,
+            correctionMinutes: e.correctionMinutes,
+            reviewNote: e.reviewNote,
           }))}
+          onSubmit={submitTimeEntry}
         />
       </section>
     </div>

@@ -67,7 +67,8 @@ model User {
   notifications        Notification[]
   permanentShifts        PermanentShift[]   @relation("PermanentShiftAssignee")
   createdPermanentShifts PermanentShift[]   @relation("PermanentShiftCreatedBy")
-  timeEntries            TimeEntry[]
+  timeEntries            TimeEntry[]        @relation("TimeEntryOwner")
+  reviewedTimeEntries    TimeEntry[]        @relation("TimeEntryReviewer")
 }
 
 model Invite {
@@ -168,19 +169,35 @@ model LeaveRequest {
   @@index([status])
 }
 
-/// Feitelijke in-/uitklokregistratie, los van het geplande rooster.
+enum TimeEntryStatus {
+  PENDING
+  APPROVED
+}
+
+/// Feitelijke in-/uitklokregistratie, los van het geplande rooster. Na het uitklokken
+/// kan de medewerker 'm indienen; de beheerder keurt daarna goed (evt. met een
+/// correctie in minuten), waarna de bijbehorende Shift automatisch wordt bijgewerkt.
 model TimeEntry {
   id        String    @id @default(cuid())
   userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation("TimeEntryOwner", fields: [userId], references: [id], onDelete: Cascade)
 
   clockIn   DateTime
   clockOut  DateTime?
+
+  submittedAt       DateTime?
+  status            TimeEntryStatus?
+  correctionMinutes Int?
+  reviewNote        String?
+  reviewedById      String?
+  reviewedBy        User?            @relation("TimeEntryReviewer", fields: [reviewedById], references: [id])
+  reviewedAt        DateTime?
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
   @@index([userId, clockIn])
+  @@index([status])
 }
 
 model Notification {
