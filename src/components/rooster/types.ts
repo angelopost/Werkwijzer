@@ -14,6 +14,8 @@ export type ShiftItem = {
   status: "DRAFT" | "PUBLISHED";
   assignedUserId: string | null;
   permanentShiftId: string | null;
+  correctionMinutes: number | null;
+  correctionNote: string | null;
 };
 
 export type LeavePeriod = {

@@ -178,6 +178,19 @@ export function ShiftDialog({
             </p>
           )}
 
+          {shift && typeof shift.correctionMinutes === "number" && (
+            <div className="rounded-lg border bg-muted/40 p-3 text-sm">
+              <p className="font-medium">
+                Tijd aangepast via inkloktijd-goedkeuring
+                {shift.correctionMinutes !== 0 &&
+                  ` (${shift.correctionMinutes > 0 ? "+" : ""}${shift.correctionMinutes} min)`}
+              </p>
+              {shift.correctionNote && (
+                <p className="mt-1 text-muted-foreground">{shift.correctionNote}</p>
+              )}
+            </div>
+          )}
+
           {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
           <DialogFooter className="flex-col sm:flex-col items-stretch gap-2">

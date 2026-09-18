@@ -8,7 +8,7 @@ import { updateTimeEntry, deleteTimeEntry } from "./actions";
 export default async function InklokkenPage({
   searchParams,
 }: {
-  searchParams: Promise<{ date?: string; userId?: string }>;
+  searchParams: Promise<{ from?: string; to?: string; userId?: string }>;
 }) {
   const params = await searchParams;
 
@@ -18,17 +18,18 @@ export default async function InklokkenPage({
     include: { timeEntries: { where: { clockOut: null }, take: 1 } },
   });
 
-  const entryWhere: { userId?: string; clockIn?: { gte: Date; lt: Date } } = {};
+  const entryWhere: { userId?: string; clockIn?: { gte?: Date; lt?: Date } } = {};
   if (params.userId) entryWhere.userId = params.userId;
-  if (params.date) {
-    const { start, end } = getAmsterdamDayRangeUtc(params.date);
-    entryWhere.clockIn = { gte: start, lt: end };
+  if (params.from || params.to) {
+    entryWhere.clockIn = {};
+    if (params.from) entryWhere.clockIn.gte = getAmsterdamDayRangeUtc(params.from).start;
+    if (params.to) entryWhere.clockIn.lt = getAmsterdamDayRangeUtc(params.to).end;
   }
 
   const recentEntries = await prisma.timeEntry.findMany({
     where: entryWhere,
     orderBy: { clockIn: "desc" },
-    take: 100,
+    take: 500,
     include: { user: true },
   });
 

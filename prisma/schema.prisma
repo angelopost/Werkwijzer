@@ -99,6 +99,10 @@ model Shift {
   permanentShiftId String?
   permanentShift    PermanentShift? @relation(fields: [permanentShiftId], references: [id], onDelete: SetNull)
 
+  /// Gezet wanneer deze dienst automatisch is bijgewerkt via een goedgekeurde inkloktijd.
+  correctionMinutes Int?
+  correctionNote    String?
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 

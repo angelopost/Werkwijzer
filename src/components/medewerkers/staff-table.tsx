@@ -15,7 +15,6 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { toggleStaffActive, regenerateInvite } from "@/app/(admin)/medewerkers/actions";
 import { InviteLinkBanner } from "./invite-link-banner";
 import { ContractTypeSelect } from "./contract-type-select";
-import { ContractHoursInput } from "./contract-hours-input";
 import { StaffNameEditor } from "./staff-name-editor";
 import { DeleteStaffButton } from "./delete-staff-button";
 
@@ -24,7 +23,6 @@ type StaffRow = {
   name: string;
   email: string;
   isActive: boolean;
-  contractHoursPerWeek: number | null;
   contractType: "VAST" | "NUL_UREN" | null;
   hasAcceptedInvite: boolean;
 };
@@ -47,7 +45,6 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
             <TableRow>
               <TableHead>Naam</TableHead>
               <TableHead>E-mail</TableHead>
-              <TableHead>Contracturen</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Acties</TableHead>
             </TableRow>
@@ -63,9 +60,6 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
                   </div>
                 </TableCell>
                 <TableCell className="text-muted-foreground">{member.email}</TableCell>
-                <TableCell>
-                  <ContractHoursInput userId={member.id} value={member.contractHoursPerWeek} />
-                </TableCell>
                 <TableCell>
                   {!member.hasAcceptedInvite ? (
                     <Badge variant="secondary">Uitnodiging openstaand</Badge>
@@ -92,7 +86,7 @@ export function StaffTable({ staff }: { staff: StaffRow[] }) {
             ))}
             {staff.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={4} className="text-center text-muted-foreground">
                   Nog geen medewerkers toegevoegd.
                 </TableCell>
               </TableRow>

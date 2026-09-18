@@ -19,7 +19,6 @@ export async function createStaffMember(
   const parsed = staffFormSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
-    contractHoursPerWeek: formData.get("contractHoursPerWeek") || undefined,
     contractType: formData.get("contractType") || undefined,
   });
   if (!parsed.success) {
@@ -40,7 +39,6 @@ export async function createStaffMember(
       name: data.name,
       email: data.email,
       role: "STAFF",
-      contractHoursPerWeek: data.contractHoursPerWeek ?? null,
       contractType: data.contractType ?? null,
       invite: { create: { token, expiresAt } },
     },
@@ -54,18 +52,6 @@ export async function setContractType(userId: string, contractType: "VAST" | "NU
   await requireAdmin();
   await prisma.user.update({ where: { id: userId }, data: { contractType } });
   revalidatePath("/medewerkers");
-}
-
-export async function setContractHours(userId: string, hours: number | null) {
-  await requireAdmin();
-
-  if (hours !== null && (Number.isNaN(hours) || hours < 0 || hours > 60)) {
-    return { error: "Contracturen moeten tussen 0 en 60 liggen" };
-  }
-
-  await prisma.user.update({ where: { id: userId }, data: { contractHoursPerWeek: hours } });
-  revalidatePath("/medewerkers");
-  revalidatePath("/uren");
 }
 
 export async function toggleStaffActive(userId: string) {

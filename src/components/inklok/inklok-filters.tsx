@@ -12,14 +12,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+function toInputDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = (date.getMonth() + 1).toString().padStart(2, "0");
+  const d = date.getDate().toString().padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export function InklokFilters({ staff }: { staff: { id: string; name: string }[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const date = searchParams.get("date") ?? "";
+  const from = searchParams.get("from") ?? "";
+  const to = searchParams.get("to") ?? "";
   const userId = searchParams.get("userId") ?? "";
-  const hasFilters = Boolean(date || userId);
+  const hasFilters = Boolean(from || to || userId);
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -28,15 +36,39 @@ export function InklokFilters({ staff }: { staff: { id: string; name: string }[]
     router.push(params.size > 0 ? `${pathname}?${params.toString()}` : pathname);
   }
 
+  function setRange(rangeFrom: string, rangeTo: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("from", rangeFrom);
+    params.set("to", rangeTo);
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
+  function selectThisMonth() {
+    const now = new Date();
+    const first = new Date(now.getFullYear(), now.getMonth(), 1);
+    const last = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    setRange(toInputDate(first), toInputDate(last));
+  }
+
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-4">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="filterDate">Dag</Label>
+        <Label htmlFor="filterFrom">Van</Label>
         <Input
-          id="filterDate"
+          id="filterFrom"
           type="date"
-          value={date}
-          onChange={(e) => setParam("date", e.target.value)}
+          value={from}
+          onChange={(e) => setParam("from", e.target.value)}
+          className="h-8 w-auto"
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="filterTo">Tot en met</Label>
+        <Input
+          id="filterTo"
+          type="date"
+          value={to}
+          onChange={(e) => setParam("to", e.target.value)}
           className="h-8 w-auto"
         />
       </div>
@@ -61,6 +93,9 @@ export function InklokFilters({ staff }: { staff: { id: string; name: string }[]
           </SelectContent>
         </Select>
       </div>
+      <Button type="button" variant="outline" size="sm" onClick={selectThisMonth}>
+        Deze maand
+      </Button>
       {hasFilters && (
         <Button type="button" variant="ghost" size="sm" onClick={() => router.push(pathname)}>
           Filters wissen

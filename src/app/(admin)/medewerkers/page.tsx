@@ -21,7 +21,6 @@ export default async function MedewerkersPage() {
           name: s.name,
           email: s.email,
           isActive: s.isActive,
-          contractHoursPerWeek: s.contractHoursPerWeek,
           contractType: s.contractType,
           hasAcceptedInvite: !s.invite || s.invite.acceptedAt !== null,
         }))}

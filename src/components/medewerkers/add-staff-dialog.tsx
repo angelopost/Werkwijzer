@@ -58,10 +58,6 @@ export function AddStaffDialog() {
               <Input id="email" name="email" type="email" required />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="contractHoursPerWeek">Contracturen per week</Label>
-              <Input id="contractHoursPerWeek" name="contractHoursPerWeek" type="number" min={0} max={60} />
-            </div>
-            <div className="flex flex-col gap-2">
               <Label htmlFor="contractType">Contracttype</Label>
               <Select name="contractType">
                 <SelectTrigger id="contractType" className="w-full">

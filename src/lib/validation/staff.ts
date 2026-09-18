@@ -3,7 +3,6 @@ import { z } from "zod";
 export const staffFormSchema = z.object({
   name: z.string().min(2, { error: "Naam moet minstens 2 tekens zijn" }),
   email: z.email({ error: "Ongeldig e-mailadres" }),
-  contractHoursPerWeek: z.coerce.number().min(0).max(60).optional(),
   contractType: z.enum(["VAST", "NUL_UREN"]).optional(),
 });
 

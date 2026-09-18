@@ -64,6 +64,8 @@ export default async function RoosterPage({
           status: s.status,
           assignedUserId: s.assignedUserId,
           permanentShiftId: s.permanentShiftId,
+          correctionMinutes: s.correctionMinutes,
+          correctionNote: s.correctionNote,
         }))}
         leavePeriods={leaveRequests.map((l) => ({
           id: l.id,

@@ -69,7 +69,12 @@ export async function approveTimeEntry(
   if (shift) {
     await prisma.shift.update({
       where: { id: shift.id },
-      data: { startTime: newStartTime, endTime: newEndTime },
+      data: {
+        startTime: newStartTime,
+        endTime: newEndTime,
+        correctionMinutes,
+        correctionNote: reviewNote,
+      },
     });
   }
 

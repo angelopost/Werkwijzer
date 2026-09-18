@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 
 export default async function UrenPage({
   searchParams,
@@ -51,15 +50,11 @@ export default async function UrenPage({
             <TableRow>
               <TableHead>Medewerker</TableHead>
               <TableHead>Geplande uren</TableHead>
-              <TableHead>Contracturen</TableHead>
-              <TableHead>Verschil</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {staff.map((member) => {
               const hours = hoursByUser.get(member.id) ?? 0;
-              const contract = member.contractHoursPerWeek;
-              const diff = contract != null ? hours - contract : null;
               return (
                 <TableRow key={member.id}>
                   <TableCell className="font-medium">
@@ -69,25 +64,12 @@ export default async function UrenPage({
                     </div>
                   </TableCell>
                   <TableCell>{formatHours(hours)} uur</TableCell>
-                  <TableCell>{contract != null ? `${formatHours(contract)} uur` : "—"}</TableCell>
-                  <TableCell>
-                    {diff == null ? (
-                      "—"
-                    ) : Math.abs(diff) < 0.05 ? (
-                      <Badge variant="secondary">Op schema</Badge>
-                    ) : (
-                      <Badge variant={diff > 0 ? "default" : "secondary"}>
-                        {diff > 0 ? "+" : ""}
-                        {formatHours(diff)} uur
-                      </Badge>
-                    )}
-                  </TableCell>
                 </TableRow>
               );
             })}
             {staff.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground">
+                <TableCell colSpan={2} className="text-center text-muted-foreground">
                   Nog geen medewerkers.
                 </TableCell>
               </TableRow>
