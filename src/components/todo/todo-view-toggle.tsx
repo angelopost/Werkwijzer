@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-export function TodoViewToggle({ isToday }: { isToday: boolean }) {
+export function TodoViewToggle({ basePath, isToday }: { basePath: string; isToday: boolean }) {
   return (
     <div className="inline-flex items-center gap-1 rounded-lg border bg-card p-1">
       <Link
-        href="/todo?view=vandaag"
+        href={`${basePath}?view=vandaag`}
         className={cn(
           "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
           isToday
@@ -16,7 +16,7 @@ export function TodoViewToggle({ isToday }: { isToday: boolean }) {
         Vandaag
       </Link>
       <Link
-        href="/todo"
+        href={basePath}
         className={cn(
           "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
           !isToday

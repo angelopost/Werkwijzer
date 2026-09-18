@@ -9,6 +9,8 @@ export type TodoItem = {
   completed: boolean;
   assigneeId: string | null;
   assigneeName: string | null;
+  completedById: string | null;
+  completedByName: string | null;
   permanentTodoId: string | null;
 };
 

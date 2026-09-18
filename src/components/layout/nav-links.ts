@@ -9,11 +9,13 @@ export const ADMIN_NAV: NavLink[] = [
   { href: "/medewerkers", label: "Medewerkers", icon: "users" },
   { href: "/uren", label: "Uren", icon: "clock" },
   { href: "/todo", label: "To do", icon: "todo" },
+  { href: "/todo-medewerkers", label: "To do medewerkers", icon: "todo" },
 ];
 
 export const STAFF_NAV: NavLink[] = [
   { href: "/mijn-rooster", label: "Mijn rooster", icon: "calendar" },
   { href: "/mijn-inklok", label: "Inklokken", icon: "timer" },
   { href: "/mijn-uren", label: "Mijn uren", icon: "clock" },
+  { href: "/mijn-to-do", label: "To do", icon: "todo" },
   { href: "/verlof", label: "Verlof", icon: "file" },
 ];

@@ -5,7 +5,7 @@ import { TodoBoard } from "@/components/todo/todo-board";
 import { TodoViewToggle } from "@/components/todo/todo-view-toggle";
 import { WeekNav } from "@/components/layout/week-nav";
 
-export default async function TodoPage({
+export default async function TodoMedewerkersPage({
   searchParams,
 }: {
   searchParams: Promise<{ view?: string; week?: string }>;
@@ -25,7 +25,7 @@ export default async function TodoPage({
 
   const [todos, staff] = await Promise.all([
     prisma.todo.findMany({
-      where: { date: { gte: from, lte: to }, forStaff: false },
+      where: { date: { gte: from, lte: to }, forStaff: true },
       include: { assignee: true, completedBy: true },
       orderBy: [{ priority: "asc" }, { createdAt: "asc" }],
     }),
@@ -38,11 +38,12 @@ export default async function TodoPage({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <TodoViewToggle basePath="/todo" isToday={isToday} />
-        {!isToday && <WeekNav basePath="/todo" weekStart={weekStart} />}
+        <TodoViewToggle basePath="/todo-medewerkers" isToday={isToday} />
+        {!isToday && <WeekNav basePath="/todo-medewerkers" weekStart={weekStart} />}
       </div>
 
       <TodoBoard
+        forStaff
         days={days.map(toDateKey)}
         todos={todos.map((t) => ({
           id: t.id,

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
-const ADMIN_PREFIXES = ["/rooster", "/medewerkers", "/goedkeuringen", "/uren", "/inklokken", "/todo"];
-const STAFF_PREFIXES = ["/mijn-rooster", "/verlof", "/mijn-inklok", "/mijn-uren"];
+const ADMIN_PREFIXES = ["/rooster", "/medewerkers", "/goedkeuringen", "/uren", "/inklokken", "/todo", "/todo-medewerkers"];
+const STAFF_PREFIXES = ["/mijn-rooster", "/verlof", "/mijn-inklok", "/mijn-uren", "/mijn-to-do"];
 const PUBLIC_PATHS = ["/login"];
 const PUBLIC_PREFIXES = ["/uitnodiging/"];
 

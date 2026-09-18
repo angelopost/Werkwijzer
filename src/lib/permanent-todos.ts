@@ -11,6 +11,7 @@ type TodoCreateInput = {
   date: Date;
   priority: TodoPriority;
   assigneeId: string | null;
+  forStaff: boolean;
   createdById: string;
   permanentTodoId: string;
 };
@@ -63,6 +64,7 @@ export async function materializePermanentTodos(rangeStart: Date, rangeEnd: Date
         date,
         priority: template.priority,
         assigneeId: template.assigneeId,
+        forStaff: template.forStaff,
         createdById: template.createdById,
         permanentTodoId: template.id,
       });
@@ -80,6 +82,7 @@ export async function createPermanentTodo(input: {
   weekday: number;
   priority: TodoPriority;
   assigneeId: string | null;
+  forStaff: boolean;
   activeFrom: Date;
   createdById: string;
   anchorTodoId: string;
@@ -91,6 +94,7 @@ export async function createPermanentTodo(input: {
       weekday: input.weekday,
       priority: input.priority,
       assigneeId: input.assigneeId,
+      forStaff: input.forStaff,
       activeFrom: input.activeFrom,
       createdById: input.createdById,
     },

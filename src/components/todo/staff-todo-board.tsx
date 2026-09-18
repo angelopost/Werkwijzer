@@ -1,16 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { CircleCheckIcon, Plus, Repeat } from "lucide-react";
+import { CircleCheckIcon, Repeat } from "lucide-react";
 import { formatDayLabel, isToday, parseDateKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { toggleTodoCompleted } from "@/app/(admin)/todo/actions";
-import { TodoDialog } from "./todo-dialog";
+import { StaffTodoDialog } from "./staff-todo-dialog";
 import { PRIORITY_LABEL, type TodoItem, type TodoPriority, type TodoStaffOption } from "./types";
 
 const PRIORITY_BADGE_VARIANT: Record<TodoPriority, "destructive" | "default" | "secondary"> = {
@@ -19,22 +16,17 @@ const PRIORITY_BADGE_VARIANT: Record<TodoPriority, "destructive" | "default" | "
   NIET_DRINGEND: "secondary",
 };
 
-export function TodoBoard({
+export function StaffTodoBoard({
   days: dayKeys,
   todos,
   staff,
-  forStaff = false,
 }: {
   days: string[];
   todos: TodoItem[];
   staff: TodoStaffOption[];
-  forStaff?: boolean;
 }) {
   const days = dayKeys.map(parseDateKey);
-  const defaultDateKey = dayKeys[0];
-
-  const [selection, setSelection] = useState<{ dateKey: string; todo: TodoItem | null } | null>(null);
-  const router = useRouter();
+  const [selected, setSelected] = useState<TodoItem | null>(null);
 
   const todosByDay = new Map<string, TodoItem[]>();
   for (const todo of todos) {
@@ -43,22 +35,8 @@ export function TodoBoard({
     todosByDay.set(todo.date, list);
   }
 
-  async function handleToggle(id: string) {
-    await toggleTodoCompleted(id);
-    router.refresh();
-  }
-
   return (
     <div className="flex flex-col gap-4">
-      <Button
-        type="button"
-        onClick={() => setSelection({ dateKey: defaultDateKey, todo: null })}
-        className="self-start"
-      >
-        <Plus data-icon="inline-start" />
-        To do toevoegen
-      </Button>
-
       <div className="flex gap-4 overflow-x-auto pb-2">
         {days.map((day, index) => {
           const dateKey = dayKeys[index];
@@ -73,15 +51,10 @@ export function TodoBoard({
                 {dayTodos.map((todo) => (
                   <div
                     key={todo.id}
-                    onClick={() => setSelection({ dateKey, todo })}
+                    onClick={() => setSelected(todo)}
                     className="flex cursor-pointer items-start gap-2 rounded-lg border bg-background p-2.5 shadow-sm transition-transform hover:-translate-y-px"
                   >
-                    <Checkbox
-                      checked={todo.completed}
-                      onClick={(e) => e.stopPropagation()}
-                      onCheckedChange={() => handleToggle(todo.id)}
-                      className="mt-0.5"
-                    />
+                    <Checkbox checked={todo.completed} disabled className="mt-0.5" />
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
                       <p
                         className={cn(
@@ -114,20 +87,21 @@ export function TodoBoard({
                     </div>
                   </div>
                 ))}
+                {dayTodos.length === 0 && (
+                  <p className="p-1 text-xs text-muted-foreground">Geen to do&apos;s</p>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
-      {selection && (
-        <TodoDialog
+      {selected && (
+        <StaffTodoDialog
           open
-          onOpenChange={(open) => !open && setSelection(null)}
-          dateKey={selection.dateKey}
-          todo={selection.todo}
+          onOpenChange={(open) => !open && setSelected(null)}
+          todo={selected}
           staff={staff}
-          forStaff={forStaff}
         />
       )}
     </div>

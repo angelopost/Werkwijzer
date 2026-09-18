@@ -50,7 +50,7 @@ export function Sidebar({
       </div>
       <nav className="flex-1 space-y-1 px-3 py-2">
         {links.map((link) => {
-          const active = pathname.startsWith(link.href);
+          const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
           const Icon = ICONS[link.icon];
           return (
             <Link

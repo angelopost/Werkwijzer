@@ -13,7 +13,19 @@ function resolveAssigneeId(value: string | undefined): string | null {
   return value && value !== "algemeen" ? value : null;
 }
 
-export async function createTodo(_prevState: TodoActionState, formData: FormData): Promise<TodoActionState> {
+/** Alle drie de schermen die to do's tonen worden opnieuw opgehaald, ongeacht welke
+ * van de twee (intern of medewerkers) het betreft — dat houdt dit simpel. */
+function revalidateTodoPaths() {
+  revalidatePath("/todo");
+  revalidatePath("/todo-medewerkers");
+  revalidatePath("/mijn-to-do");
+}
+
+export async function createTodo(
+  forStaff: boolean,
+  _prevState: TodoActionState,
+  formData: FormData
+): Promise<TodoActionState> {
   const admin = await requireAdmin();
 
   const parsed = todoFormSchema.safeParse({
@@ -37,6 +49,7 @@ export async function createTodo(_prevState: TodoActionState, formData: FormData
       date,
       assigneeId: resolveAssigneeId(data.assigneeId),
       priority: data.priority,
+      forStaff,
       createdById: admin.id,
     },
   });
@@ -48,18 +61,20 @@ export async function createTodo(_prevState: TodoActionState, formData: FormData
       weekday: getWeekdayIndex(date),
       priority: data.priority,
       assigneeId: resolveAssigneeId(data.assigneeId),
+      forStaff,
       activeFrom: date,
       createdById: admin.id,
       anchorTodoId: todo.id,
     });
   }
 
-  revalidatePath("/todo");
+  revalidateTodoPaths();
   return { success: true };
 }
 
 export async function updateTodo(
   todoId: string,
+  forStaff: boolean,
   _prevState: TodoActionState,
   formData: FormData
 ): Promise<TodoActionState> {
@@ -97,13 +112,14 @@ export async function updateTodo(
       weekday: getWeekdayIndex(date),
       priority: data.priority,
       assigneeId: resolveAssigneeId(data.assigneeId),
+      forStaff,
       activeFrom: date,
       createdById: admin.id,
       anchorTodoId: todoId,
     });
   }
 
-  revalidatePath("/todo");
+  revalidateTodoPaths();
   return { success: true };
 }
 
@@ -111,7 +127,7 @@ export async function toggleTodoCompleted(todoId: string) {
   await requireAdmin();
   const todo = await prisma.todo.findUniqueOrThrow({ where: { id: todoId } });
   await prisma.todo.update({ where: { id: todoId }, data: { completed: !todo.completed } });
-  revalidatePath("/todo");
+  revalidateTodoPaths();
 }
 
 /** Verwijdert één losse to do. Hoort deze bij een vast patroon, dan wordt de datum
@@ -130,11 +146,11 @@ export async function deleteTodo(todoId: string) {
     });
   }
 
-  revalidatePath("/todo");
+  revalidateTodoPaths();
 }
 
 export async function deleteAllPermanentTodos(permanentTodoId: string) {
   await requireAdmin();
   await deletePermanentTodoLib(permanentTodoId);
-  revalidatePath("/todo");
+  revalidateTodoPaths();
 }

@@ -36,14 +36,18 @@ export function TodoDialog({
   dateKey,
   todo,
   staff,
+  forStaff = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   dateKey: string;
   todo: TodoItem | null;
   staff: TodoStaffOption[];
+  forStaff?: boolean;
 }) {
-  const boundAction = todo ? updateTodo.bind(null, todo.id) : createTodo;
+  const boundAction = todo
+    ? updateTodo.bind(null, todo.id, forStaff)
+    : createTodo.bind(null, forStaff);
   const [state, action, pending] = useActionState<TodoActionState, FormData>(boundAction, undefined);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [bulkDeleteChecked, setBulkDeleteChecked] = useState(false);
@@ -193,6 +197,12 @@ export function TodoDialog({
           ) : (
             <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
               Vast to do-patroon (elke {weekdayLabel})
+            </p>
+          )}
+
+          {todo?.completedByName && (
+            <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+              Afgerond door: {todo.completedByName}
             </p>
           )}
 
