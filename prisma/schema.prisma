@@ -218,11 +218,12 @@ model TimeEntry {
 /// Interne to-do voor de beheerder(s), per dag. Geen medewerker (assigneeId = null)
 /// betekent "Algemeen". forStaff = true betekent dat de to do hoort bij de
 /// medewerkers-lijst (zichtbaar onder Mijn uren > To do bij het personeel).
+/// date = null betekent een algemene to do zonder vaste datum.
 model Todo {
   id          String       @id @default(cuid())
   title       String
   description String?
-  date        DateTime     @db.Date
+  date        DateTime?    @db.Date
   priority    TodoPriority @default(NORMAAL)
   completed   Boolean      @default(false)
   forStaff    Boolean      @default(false)

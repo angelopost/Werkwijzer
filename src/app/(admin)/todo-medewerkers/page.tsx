@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
 import { materializePermanentTodos } from "@/lib/permanent-todos";
+import { fetchTodoBoardItems } from "@/lib/todo-queries";
 import { TodoBoard } from "@/components/todo/todo-board";
 import { TodoViewToggle } from "@/components/todo/todo-view-toggle";
 import { WeekNav } from "@/components/layout/week-nav";
@@ -24,11 +25,7 @@ export default async function TodoMedewerkersPage({
   await materializePermanentTodos(from, to);
 
   const [todos, staff] = await Promise.all([
-    prisma.todo.findMany({
-      where: { date: { gte: from, lte: to }, forStaff: true },
-      include: { assignee: true, completedBy: true },
-      orderBy: [{ priority: "asc" }, { createdAt: "asc" }],
-    }),
+    fetchTodoBoardItems({ from, to, forStaff: true }),
     prisma.user.findMany({
       where: { role: "STAFF", isActive: true },
       orderBy: { name: "asc" },
@@ -45,19 +42,7 @@ export default async function TodoMedewerkersPage({
       <TodoBoard
         forStaff
         days={days.map(toDateKey)}
-        todos={todos.map((t) => ({
-          id: t.id,
-          title: t.title,
-          description: t.description,
-          date: toDateKey(t.date),
-          priority: t.priority,
-          completed: t.completed,
-          assigneeId: t.assigneeId,
-          assigneeName: t.assignee?.name ?? null,
-          completedById: t.completedById,
-          completedByName: t.completedBy?.name ?? null,
-          permanentTodoId: t.permanentTodoId,
-        }))}
+        todos={todos}
         staff={staff.map((s) => ({ id: s.id, name: s.name }))}
       />
     </div>

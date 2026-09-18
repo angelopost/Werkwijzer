@@ -40,7 +40,7 @@ export function TodoDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  dateKey: string;
+  dateKey: string | null;
   todo: TodoItem | null;
   staff: TodoStaffOption[];
   forStaff?: boolean;
@@ -73,8 +73,10 @@ export function TodoDialog({
     onOpenChange(false);
   }
 
-  const weekdayLabel = getWeekdayFullLabel(parseDateKey(todo?.date ?? dateKey));
-  const canMakePermanent = !todo || !todo.permanentTodoId;
+  const effectiveDateKey = todo?.date ?? dateKey;
+  const isGeneral = effectiveDateKey === null;
+  const weekdayLabel = isGeneral ? "" : getWeekdayFullLabel(parseDateKey(effectiveDateKey));
+  const canMakePermanent = !isGeneral && (!todo || !todo.permanentTodoId);
 
   if (todo?.permanentTodoId && confirmBulkDelete) {
     return (
@@ -140,17 +142,19 @@ export function TodoDialog({
             />
           </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="date">Datum</Label>
-            <Input
-              id="date"
-              name="date"
-              type="date"
-              required
-              className="block w-full max-w-full overflow-hidden"
-              defaultValue={todo?.date ?? dateKey}
-            />
-          </div>
+          {!isGeneral && (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="date">Datum</Label>
+              <Input
+                id="date"
+                name="date"
+                type="date"
+                required
+                className="block w-full max-w-full overflow-hidden"
+                defaultValue={effectiveDateKey ?? ""}
+              />
+            </div>
+          )}
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="assigneeId">Medewerker</Label>
@@ -189,16 +193,17 @@ export function TodoDialog({
             </Select>
           </div>
 
-          {canMakePermanent ? (
-            <label className="flex items-center gap-2.5 rounded-lg border p-3 text-sm">
-              <Checkbox name="permanent" defaultChecked={false} />
-              <span className="font-medium">Permanent</span>
-            </label>
-          ) : (
-            <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
-              Vast to do-patroon (elke {weekdayLabel})
-            </p>
-          )}
+          {!isGeneral &&
+            (canMakePermanent ? (
+              <label className="flex items-center gap-2.5 rounded-lg border p-3 text-sm">
+                <Checkbox name="permanent" defaultChecked={false} />
+                <span className="font-medium">Permanent</span>
+              </label>
+            ) : (
+              <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+                Vast to do-patroon (elke {weekdayLabel})
+              </p>
+            ))}
 
           {todo?.completedByName && (
             <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">

@@ -44,7 +44,7 @@ export async function materializePermanentTodos(rangeStart: Date, rangeEnd: Date
     where: { permanentTodoId: { in: templateIds }, date: { gte: rangeStart, lte: rangeEnd } },
     select: { permanentTodoId: true, date: true },
   });
-  const existingKeys = new Set(existing.map((t) => `${t.permanentTodoId}_${toDateKey(t.date)}`));
+  const existingKeys = new Set(existing.map((t) => `${t.permanentTodoId}_${toDateKey(t.date!)}`));
 
   const exceptions = await prisma.permanentTodoException.findMany({
     where: { permanentTodoId: { in: templateIds }, date: { gte: rangeStart, lte: rangeEnd } },

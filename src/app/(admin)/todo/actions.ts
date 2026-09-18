@@ -31,7 +31,7 @@ export async function createTodo(
   const parsed = todoFormSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description") || undefined,
-    date: formData.get("date"),
+    date: formData.get("date") || undefined,
     assigneeId: formData.get("assigneeId") || undefined,
     priority: formData.get("priority"),
     permanent: formData.get("permanent") || undefined,
@@ -40,7 +40,7 @@ export async function createTodo(
     return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer" };
   }
   const data = parsed.data;
-  const date = parseDateKey(data.date);
+  const date = data.date ? parseDateKey(data.date) : null;
 
   const todo = await prisma.todo.create({
     data: {
@@ -54,7 +54,7 @@ export async function createTodo(
     },
   });
 
-  if (data.permanent) {
+  if (data.permanent && date) {
     await createPermanentTodo({
       title: data.title,
       description: data.description || null,
@@ -83,7 +83,7 @@ export async function updateTodo(
   const parsed = todoFormSchema.safeParse({
     title: formData.get("title"),
     description: formData.get("description") || undefined,
-    date: formData.get("date"),
+    date: formData.get("date") || undefined,
     assigneeId: formData.get("assigneeId") || undefined,
     priority: formData.get("priority"),
     permanent: formData.get("permanent") || undefined,
@@ -92,7 +92,7 @@ export async function updateTodo(
     return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer" };
   }
   const data = parsed.data;
-  const date = parseDateKey(data.date);
+  const date = data.date ? parseDateKey(data.date) : null;
 
   await prisma.todo.update({
     where: { id: todoId },
@@ -105,7 +105,7 @@ export async function updateTodo(
     },
   });
 
-  if (data.permanent) {
+  if (data.permanent && date) {
     await createPermanentTodo({
       title: data.title,
       description: data.description || null,
@@ -126,7 +126,11 @@ export async function updateTodo(
 export async function toggleTodoCompleted(todoId: string) {
   await requireAdmin();
   const todo = await prisma.todo.findUniqueOrThrow({ where: { id: todoId } });
-  await prisma.todo.update({ where: { id: todoId }, data: { completed: !todo.completed } });
+  const completed = !todo.completed;
+  await prisma.todo.update({
+    where: { id: todoId },
+    data: { completed, completedById: completed ? todo.completedById : null },
+  });
   revalidateTodoPaths();
 }
 
@@ -136,7 +140,7 @@ export async function deleteTodo(todoId: string) {
   await requireAdmin();
   const todo = await prisma.todo.delete({ where: { id: todoId } });
 
-  if (todo.permanentTodoId) {
+  if (todo.permanentTodoId && todo.date) {
     await prisma.permanentTodoException.upsert({
       where: {
         permanentTodoId_date: { permanentTodoId: todo.permanentTodoId, date: todo.date },

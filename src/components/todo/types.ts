@@ -4,7 +4,7 @@ export type TodoItem = {
   id: string;
   title: string;
   description: string | null;
-  date: string;
+  date: string | null;
   priority: TodoPriority;
   completed: boolean;
   assigneeId: string | null;

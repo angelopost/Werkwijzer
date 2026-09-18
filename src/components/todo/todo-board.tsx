@@ -19,6 +19,58 @@ const PRIORITY_BADGE_VARIANT: Record<TodoPriority, "destructive" | "default" | "
   NIET_DRINGEND: "secondary",
 };
 
+function TodoCard({
+  todo,
+  onClick,
+  onToggle,
+}: {
+  todo: TodoItem;
+  onClick: () => void;
+  onToggle: () => void;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className="flex cursor-pointer items-start gap-2 rounded-lg border bg-background p-2.5 shadow-sm transition-transform hover:-translate-y-px"
+    >
+      <Checkbox
+        checked={todo.completed}
+        onClick={(e) => e.stopPropagation()}
+        onCheckedChange={onToggle}
+        className="mt-0.5"
+      />
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <p
+          className={cn(
+            "flex items-center gap-1 text-sm font-medium break-words",
+            todo.completed && "text-muted-foreground line-through"
+          )}
+        >
+          {todo.permanentTodoId && (
+            <Repeat className="size-3 shrink-0 text-muted-foreground" strokeWidth={2.5} />
+          )}
+          {todo.title}
+        </p>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Badge variant={PRIORITY_BADGE_VARIANT[todo.priority]}>{PRIORITY_LABEL[todo.priority]}</Badge>
+          {todo.assigneeName && (
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <UserAvatar name={todo.assigneeName} className="size-4 text-[9px]" />
+              {todo.assigneeName}
+            </span>
+          )}
+        </div>
+        {todo.completedByName && (
+          <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+            <CircleCheckIcon className="size-3" />
+            Afgerond door {todo.completedByName}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function TodoBoard({
   days: dayKeys,
   todos,
@@ -33,11 +85,18 @@ export function TodoBoard({
   const days = dayKeys.map(parseDateKey);
   const defaultDateKey = dayKeys[0];
 
-  const [selection, setSelection] = useState<{ dateKey: string; todo: TodoItem | null } | null>(null);
+  const [selection, setSelection] = useState<{ dateKey: string | null; todo: TodoItem | null } | null>(
+    null
+  );
   const router = useRouter();
 
   const todosByDay = new Map<string, TodoItem[]>();
+  const generalTodos: TodoItem[] = [];
   for (const todo of todos) {
+    if (todo.date === null) {
+      generalTodos.push(todo);
+      continue;
+    }
     const list = todosByDay.get(todo.date) ?? [];
     list.push(todo);
     todosByDay.set(todo.date, list);
@@ -71,53 +130,48 @@ export function TodoBoard({
               </div>
               <div className="flex flex-1 flex-col gap-2 p-2.5">
                 {dayTodos.map((todo) => (
-                  <div
+                  <TodoCard
                     key={todo.id}
+                    todo={todo}
                     onClick={() => setSelection({ dateKey, todo })}
-                    className="flex cursor-pointer items-start gap-2 rounded-lg border bg-background p-2.5 shadow-sm transition-transform hover:-translate-y-px"
-                  >
-                    <Checkbox
-                      checked={todo.completed}
-                      onClick={(e) => e.stopPropagation()}
-                      onCheckedChange={() => handleToggle(todo.id)}
-                      className="mt-0.5"
-                    />
-                    <div className="flex min-w-0 flex-1 flex-col gap-1">
-                      <p
-                        className={cn(
-                          "flex items-center gap-1 text-sm font-medium break-words",
-                          todo.completed && "text-muted-foreground line-through"
-                        )}
-                      >
-                        {todo.permanentTodoId && (
-                          <Repeat className="size-3 shrink-0 text-muted-foreground" strokeWidth={2.5} />
-                        )}
-                        {todo.title}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <Badge variant={PRIORITY_BADGE_VARIANT[todo.priority]}>
-                          {PRIORITY_LABEL[todo.priority]}
-                        </Badge>
-                        {todo.assigneeName && (
-                          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <UserAvatar name={todo.assigneeName} className="size-4 text-[9px]" />
-                            {todo.assigneeName}
-                          </span>
-                        )}
-                      </div>
-                      {todo.completedByName && (
-                        <span className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
-                          <CircleCheckIcon className="size-3" />
-                          Afgerond door {todo.completedByName}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    onToggle={() => handleToggle(todo.id)}
+                  />
                 ))}
               </div>
             </div>
           );
         })}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold">Algemene to do&apos;s</h2>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setSelection({ dateKey: null, todo: null })}
+          >
+            <Plus data-icon="inline-start" />
+            Algemene to do toevoegen
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Zonder vaste datum — kan gedaan worden wanneer het uitkomt.
+        </p>
+        <div className="flex flex-col gap-2 rounded-xl border bg-card p-2.5">
+          {generalTodos.map((todo) => (
+            <TodoCard
+              key={todo.id}
+              todo={todo}
+              onClick={() => setSelection({ dateKey: null, todo })}
+              onToggle={() => handleToggle(todo.id)}
+            />
+          ))}
+          {generalTodos.length === 0 && (
+            <p className="p-1 text-xs text-muted-foreground">Geen algemene to do&apos;s</p>
+          )}
+        </div>
       </div>
 
       {selection && (
