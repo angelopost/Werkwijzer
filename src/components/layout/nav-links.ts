@@ -1,4 +1,4 @@
-export type IconKey = "calendar" | "check" | "users" | "clock" | "file" | "timer";
+export type IconKey = "calendar" | "check" | "users" | "clock" | "file" | "timer" | "todo";
 
 export type NavLink = { href: string; label: string; icon: IconKey };
 
@@ -8,6 +8,7 @@ export const ADMIN_NAV: NavLink[] = [
   { href: "/goedkeuringen", label: "Goedkeuringen", icon: "check" },
   { href: "/medewerkers", label: "Medewerkers", icon: "users" },
   { href: "/uren", label: "Uren", icon: "clock" },
+  { href: "/todo", label: "To do", icon: "todo" },
 ];
 
 export const STAFF_NAV: NavLink[] = [

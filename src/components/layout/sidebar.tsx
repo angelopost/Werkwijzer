@@ -10,6 +10,7 @@ import {
   Clock,
   FileText,
   Timer,
+  ListTodo,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ const ICONS: Record<IconKey, LucideIcon> = {
   clock: Clock,
   file: FileText,
   timer: Timer,
+  todo: ListTodo,
 };
 
 export function Sidebar({
