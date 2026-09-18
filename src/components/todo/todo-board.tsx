@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Repeat } from "lucide-react";
-import { addUTCDays, formatDayLabel, isToday, toDateKey } from "@/lib/dates";
+import { formatDayLabel, isToday, parseDateKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +19,17 @@ const PRIORITY_BADGE_VARIANT: Record<TodoPriority, "destructive" | "default" | "
   NIET_DRINGEND: "secondary",
 };
 
-export function TodoBoard({ todos, staff }: { todos: TodoItem[]; staff: TodoStaffOption[] }) {
-  const today = new Date();
-  const todayKey = toDateKey(today);
-  const days = Array.from({ length: 7 }, (_, i) => addUTCDays(today, i));
+export function TodoBoard({
+  days: dayKeys,
+  todos,
+  staff,
+}: {
+  days: string[];
+  todos: TodoItem[];
+  staff: TodoStaffOption[];
+}) {
+  const days = dayKeys.map(parseDateKey);
+  const defaultDateKey = dayKeys[0];
 
   const [selection, setSelection] = useState<{ dateKey: string; todo: TodoItem | null } | null>(null);
   const router = useRouter();
@@ -43,7 +50,7 @@ export function TodoBoard({ todos, staff }: { todos: TodoItem[]; staff: TodoStaf
     <div className="flex flex-col gap-4">
       <Button
         type="button"
-        onClick={() => setSelection({ dateKey: todayKey, todo: null })}
+        onClick={() => setSelection({ dateKey: defaultDateKey, todo: null })}
         className="self-start"
       >
         <Plus data-icon="inline-start" />
@@ -51,8 +58,8 @@ export function TodoBoard({ todos, staff }: { todos: TodoItem[]; staff: TodoStaf
       </Button>
 
       <div className="flex gap-4 overflow-x-auto pb-2">
-        {days.map((day) => {
-          const dateKey = toDateKey(day);
+        {days.map((day, index) => {
+          const dateKey = dayKeys[index];
           const dayTodos = todosByDay.get(dateKey) ?? [];
           const label = isToday(day) ? "Vandaag" : formatDayLabel(day);
           return (

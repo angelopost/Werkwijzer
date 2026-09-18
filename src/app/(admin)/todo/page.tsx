@@ -1,12 +1,25 @@
 import { prisma } from "@/lib/db";
-import { addUTCDays, toDateKey } from "@/lib/dates";
+import { getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
 import { materializePermanentTodos } from "@/lib/permanent-todos";
 import { TodoBoard } from "@/components/todo/todo-board";
+import { TodoViewToggle } from "@/components/todo/todo-view-toggle";
+import { WeekNav } from "@/components/layout/week-nav";
 
-export default async function TodoPage() {
+export default async function TodoPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; week?: string }>;
+}) {
+  const params = await searchParams;
+  const isToday = params.view === "vandaag";
+
   const today = new Date();
-  const from = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-  const to = addUTCDays(from, 6);
+  const todayDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  const weekStart = params.week ? parseDateKey(params.week) : getWeekStart(today);
+
+  const days = isToday ? [todayDate] : getWeekDays(weekStart);
+  const from = days[0];
+  const to = days[days.length - 1];
 
   await materializePermanentTodos(from, to);
 
@@ -24,7 +37,13 @@ export default async function TodoPage() {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-center gap-3">
+        <TodoViewToggle isToday={isToday} />
+        {!isToday && <WeekNav basePath="/todo" weekStart={weekStart} />}
+      </div>
+
       <TodoBoard
+        days={days.map(toDateKey)}
         todos={todos.map((t) => ({
           id: t.id,
           title: t.title,
