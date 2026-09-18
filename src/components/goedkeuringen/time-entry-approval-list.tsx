@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatClockDayLabel, formatClockTime } from "@/lib/dates";
-import { durationHours, formatHours } from "@/lib/hours";
+import { durationHours, formatDuration } from "@/lib/hours";
 import { TimeEntryApprovalDialog, type PendingTimeEntry } from "./time-entry-approval-dialog";
 
 export function TimeEntryApprovalList({
@@ -34,7 +34,7 @@ export function TimeEntryApprovalList({
                 <p className="font-medium">{entry.employeeName}</p>
                 <p className="text-sm text-muted-foreground">
                   {formatClockDayLabel(clockIn)} · {formatClockTime(clockIn)} -{" "}
-                  {formatClockTime(clockOut)} · {formatHours(durationHours(clockIn, clockOut))} uur
+                  {formatClockTime(clockOut)} · {formatDuration(durationHours(clockIn, clockOut))}
                 </p>
               </div>
               <Button size="sm" onClick={() => setSelected(entry)}>

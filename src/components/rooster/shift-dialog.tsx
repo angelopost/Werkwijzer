@@ -181,7 +181,7 @@ export function ShiftDialog({
           {shift && typeof shift.correctionMinutes === "number" && (
             <div className="rounded-lg border bg-muted/40 p-3 text-sm">
               <p className="font-medium">
-                Tijd aangepast via inkloktijd-goedkeuring
+                Tijd aangepast
                 {shift.correctionMinutes !== 0 &&
                   ` (${shift.correctionMinutes > 0 ? "+" : ""}${shift.correctionMinutes} min)`}
               </p>

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getWeekDays, getWeekStart, parseDateKey } from "@/lib/dates";
-import { formatHours, shiftHours } from "@/lib/hours";
+import { formatDuration, shiftHours } from "@/lib/hours";
 import { WeekNav } from "@/components/layout/week-nav";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import {
@@ -63,7 +63,7 @@ export default async function UrenPage({
                       {member.name}
                     </div>
                   </TableCell>
-                  <TableCell>{formatHours(hours)} uur</TableCell>
+                  <TableCell>{formatDuration(hours)}</TableCell>
                 </TableRow>
               );
             })}

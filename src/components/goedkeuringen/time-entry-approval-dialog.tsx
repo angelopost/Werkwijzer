@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { formatClockDayLabel, formatClockTime } from "@/lib/dates";
-import { durationHours, formatHours } from "@/lib/hours";
+import { durationHours, formatDuration } from "@/lib/hours";
 
 export type PendingTimeEntry = {
   id: string;
@@ -81,7 +81,7 @@ export function TimeEntryApprovalDialog({
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Gewerkt</span>
-              <span className="font-medium">{formatHours(durationHours(clockIn, clockOut))} uur</span>
+              <span className="font-medium">{formatDuration(durationHours(clockIn, clockOut))}</span>
             </div>
             {entry.scheduledStartTime && entry.scheduledEndTime && (
               <div className="flex justify-between border-t pt-1 mt-1">

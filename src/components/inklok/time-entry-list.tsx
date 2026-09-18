@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatClockDayLabel, formatClockTime } from "@/lib/dates";
-import { durationHours, formatHours } from "@/lib/hours";
+import { durationHours, formatDuration } from "@/lib/hours";
 
 export type TimeEntryRow = {
   id: string;
@@ -80,9 +80,7 @@ export function TimeEntryList({
                     <Badge variant="secondary">Nog bezig</Badge>
                   )}
                 </TableCell>
-                <TableCell>
-                  {clockOut ? `${formatHours(durationHours(clockIn, clockOut))} uur` : "—"}
-                </TableCell>
+                <TableCell>{clockOut ? formatDuration(durationHours(clockIn, clockOut)) : "—"}</TableCell>
                 {showStatus && (
                   <TableCell>
                     {entry.status ? (

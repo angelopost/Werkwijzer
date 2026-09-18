@@ -1,6 +1,19 @@
-import { formatTime, getMonthShort, getWeekDays, getWeekdayShort, isToday, parseDateKey, toDateKey } from "@/lib/dates";
+"use client";
+
+import { useState } from "react";
+import {
+  formatDayLabel,
+  formatTime,
+  getMonthShort,
+  getWeekDays,
+  getWeekdayShort,
+  isToday,
+  parseDateKey,
+  toDateKey,
+} from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import { StaffShiftDialog } from "./staff-shift-dialog";
 import type { LeavePeriod, ShiftItem, StaffRow } from "./types";
 
 const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
@@ -18,6 +31,7 @@ export function StaffWeekGrid({
   leavePeriods?: LeavePeriod[];
 }) {
   const days = getWeekDays(parseDateKey(weekStartKey));
+  const [selectedShift, setSelectedShift] = useState<ShiftItem | null>(null);
 
   const shiftsByCell = new Map<string, ShiftItem[]>();
   for (const shift of shifts) {
@@ -90,14 +104,16 @@ export function StaffWeekGrid({
                         </div>
                       )}
                       {cellShifts.map((shift) => (
-                        <div
+                        <button
                           key={shift.id}
-                          className="w-full rounded-lg bg-primary px-2.5 py-1.5 text-primary-foreground shadow-sm"
+                          type="button"
+                          onClick={() => setSelectedShift(shift)}
+                          className="w-full rounded-lg bg-primary px-2.5 py-1.5 text-left text-primary-foreground shadow-sm transition-transform hover:-translate-y-px"
                         >
                           <div className="text-xs font-semibold">
                             {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
                           </div>
-                        </div>
+                        </button>
                       ))}
                     </div>
                   </td>
@@ -107,6 +123,15 @@ export function StaffWeekGrid({
           ))}
         </tbody>
       </table>
+
+      {selectedShift && (
+        <StaffShiftDialog
+          open
+          onOpenChange={(open) => !open && setSelectedShift(null)}
+          dateLabel={formatDayLabel(parseDateKey(selectedShift.date))}
+          shift={selectedShift}
+        />
+      )}
     </div>
   );
 }

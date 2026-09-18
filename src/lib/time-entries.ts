@@ -62,16 +62,34 @@ export async function approveTimeEntry(
   const dateKey = getAmsterdamDateKey(entry.clockIn);
   const newStartTime = combineDateAndTime(dateKey, formatClockTime(entry.clockIn));
   const newEndTime = combineDateAndTime(dateKey, formatClockTime(adjustedClockOut));
+  const shiftDate = new Date(`${dateKey}T00:00:00Z`);
 
-  const shift = await prisma.shift.findFirst({
-    where: { assignedUserId: entry.userId, date: new Date(`${dateKey}T00:00:00Z`) },
+  const existingShift = await prisma.shift.findFirst({
+    where: { assignedUserId: entry.userId, date: shiftDate },
   });
-  if (shift) {
+
+  if (existingShift) {
     await prisma.shift.update({
-      where: { id: shift.id },
+      where: { id: existingShift.id },
       data: {
         startTime: newStartTime,
         endTime: newEndTime,
+        correctionMinutes,
+        correctionNote: reviewNote,
+      },
+    });
+  } else {
+    // Geen geplande dienst die dag: de goedgekeurde inkloktijd wordt zelf de dienst,
+    // direct gepubliceerd zodat 'm ook meteen zichtbaar en meegeteld wordt.
+    await prisma.shift.create({
+      data: {
+        date: shiftDate,
+        startTime: newStartTime,
+        endTime: newEndTime,
+        breakMinutes: 0,
+        status: "PUBLISHED",
+        assignedUserId: entry.userId,
+        createdById: adminId,
         correctionMinutes,
         correctionNote: reviewNote,
       },
@@ -89,5 +107,5 @@ export async function approveTimeEntry(
     },
   });
 
-  return { success: true as const, matchedShift: Boolean(shift) };
+  return { success: true as const };
 }
