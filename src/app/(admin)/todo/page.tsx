@@ -27,7 +27,7 @@ export default async function TodoPage({
     prisma.todo.findMany({
       where: { date: { gte: from, lte: to } },
       include: { assignee: true },
-      orderBy: { createdAt: "asc" },
+      orderBy: [{ priority: "asc" }, { createdAt: "asc" }],
     }),
     prisma.user.findMany({
       where: { role: "STAFF", isActive: true },
