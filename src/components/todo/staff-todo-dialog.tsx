@@ -58,9 +58,9 @@ export function StaffTodoDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground">
-            {todo.date ? formatDayLabel(parseDateKey(todo.date)) : "Algemene to do — geen vaste datum"}
-          </p>
+          {todo.date && (
+            <p className="text-sm text-muted-foreground">{formatDayLabel(parseDateKey(todo.date))}</p>
+          )}
 
           {todo.description && (
             <p className="whitespace-pre-wrap text-sm">{todo.description}</p>
