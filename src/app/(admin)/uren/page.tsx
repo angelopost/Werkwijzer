@@ -94,7 +94,8 @@ export default async function UrenPage({
 
       <p className="text-xs text-muted-foreground">
         Gebaseerd op gepubliceerde diensten in de gekozen periode waarvan de eindtijd al is
-        verstreken. Concept-diensten en diensten die nog moeten plaatsvinden tellen nog niet mee.
+        verstreken, of die al zijn goedgekeurd via een inkloktijd. Concept-diensten en diensten
+        die nog moeten plaatsvinden en nog niet zijn goedgekeurd tellen nog niet mee.
       </p>
 
       {selectedStaff && (

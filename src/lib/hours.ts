@@ -7,8 +7,16 @@ export function shiftHours(startTime: Date, endTime: Date, breakMinutes: number)
 
 /** Een geplande dienst telt pas mee als gewerkte uren zodra de eindtijd daadwerkelijk
  * voorbij is — een dienst die nog moet plaatsvinden staat wel in het rooster, maar
- * levert nog geen uren op in Mijn uren / Uren totdat de tijd echt verstreken is. */
-export function hasShiftEnded(shift: { date: Date; endTime: Date }): boolean {
+ * levert nog geen uren op in Mijn uren / Uren totdat de tijd echt verstreken is.
+ * Uitzondering: is de dienst tot stand gekomen via een goedgekeurde inkloktijd
+ * (correctionMinutes is dan altijd gezet, ook op 0), dan telt hij direct mee — de
+ * beheerder heeft de gewerkte tijd dan al expliciet goedgekeurd. */
+export function hasShiftEnded(shift: {
+  date: Date;
+  endTime: Date;
+  correctionMinutes: number | null;
+}): boolean {
+  if (shift.correctionMinutes !== null) return true;
   const endInstant = getAmsterdamInstant(toDateKey(shift.date), formatTime(shift.endTime));
   return endInstant.getTime() <= Date.now();
 }
