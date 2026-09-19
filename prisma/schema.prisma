@@ -114,6 +114,8 @@ model Shift {
   correctionMinutes Int?
   correctionNote    String?
 
+  timeEntries   TimeEntry[]
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
@@ -207,6 +209,11 @@ model TimeEntry {
   reviewedById      String?
   reviewedBy        User?            @relation("TimeEntryReviewer", fields: [reviewedById], references: [id])
   reviewedAt        DateTime?
+
+  /// De Shift die bij goedkeuring is aangemaakt/bijgewerkt. Wordt de dienst later uit het
+  /// rooster verwijderd, dan verdwijnt deze registratie automatisch mee (onDelete: Cascade).
+  shiftId String?
+  shift   Shift?  @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

@@ -11,6 +11,7 @@ import { TimeEntryApprovalDialog, type PendingTimeEntry } from "./time-entry-app
 export function TimeEntryApprovalList({
   entries,
   onApprove,
+  onReject,
 }: {
   entries: PendingTimeEntry[];
   onApprove: (
@@ -18,6 +19,7 @@ export function TimeEntryApprovalList({
     correctionMinutes: number,
     reviewNote: string | null
   ) => Promise<{ error?: string } | undefined>;
+  onReject: (entryId: string) => Promise<void>;
 }) {
   const [selected, setSelected] = useState<PendingTimeEntry | null>(null);
   const router = useRouter();
@@ -56,6 +58,7 @@ export function TimeEntryApprovalList({
           }}
           entry={selected}
           onApprove={onApprove}
+          onReject={onReject}
         />
       )}
     </div>

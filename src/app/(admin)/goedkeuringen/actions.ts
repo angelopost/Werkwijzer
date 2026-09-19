@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { approveTimeEntry } from "@/lib/time-entries";
+import { approveTimeEntry, rejectTimeEntry } from "@/lib/time-entries";
 
 function revalidateAll() {
   revalidatePath("/goedkeuringen");
@@ -42,4 +42,10 @@ export async function approveTimeEntryRequest(
   const result = await approveTimeEntry(entryId, admin.id, correctionMinutes, reviewNote);
   revalidateAll();
   return result;
+}
+
+export async function rejectTimeEntryRequest(entryId: string) {
+  await requireAdmin();
+  await rejectTimeEntry(entryId);
+  revalidateAll();
 }

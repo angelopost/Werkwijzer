@@ -68,7 +68,9 @@ export async function approveTimeEntry(
     where: { assignedUserId: entry.userId, date: shiftDate },
   });
 
+  let shiftId: string;
   if (existingShift) {
+    shiftId = existingShift.id;
     await prisma.shift.update({
       where: { id: existingShift.id },
       data: {
@@ -81,7 +83,7 @@ export async function approveTimeEntry(
   } else {
     // Geen geplande dienst die dag: de goedgekeurde inkloktijd wordt zelf de dienst,
     // direct gepubliceerd zodat 'm ook meteen zichtbaar en meegeteld wordt.
-    await prisma.shift.create({
+    const created = await prisma.shift.create({
       data: {
         date: shiftDate,
         startTime: newStartTime,
@@ -94,6 +96,7 @@ export async function approveTimeEntry(
         correctionNote: reviewNote,
       },
     });
+    shiftId = created.id;
   }
 
   await prisma.timeEntry.update({
@@ -104,8 +107,15 @@ export async function approveTimeEntry(
       reviewNote,
       reviewedById: adminId,
       reviewedAt: new Date(),
+      shiftId,
     },
   });
 
   return { success: true as const };
+}
+
+/** Wijst een ingediende registratie af: de registratie wordt volledig verwijderd, zodat
+ * 'm ook direct verdwijnt uit het overzicht van de medewerker bij Inklokken. */
+export async function rejectTimeEntry(entryId: string) {
+  await prisma.timeEntry.delete({ where: { id: entryId } });
 }

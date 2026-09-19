@@ -69,6 +69,8 @@ export async function deleteShift(shiftId: string) {
 
   revalidatePath("/rooster");
   revalidatePath("/mijn-rooster");
+  revalidatePath("/mijn-inklok");
+  revalidatePath("/inklokken");
 }
 
 /** Verwijdert een heel vast patroon (alleen nog komende diensten; voorbije diensten
@@ -84,6 +86,8 @@ export async function deletePermanentShift(permanentShiftId: string) {
 
   revalidatePath("/rooster");
   revalidatePath("/mijn-rooster");
+  revalidatePath("/mijn-inklok");
+  revalidatePath("/inklokken");
 }
 
 export async function updateLeavePeriod(

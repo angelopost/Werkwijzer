@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatLeaveRangeLabel, formatTime, getAmsterdamDateKey } from "@/lib/dates";
 import { ApprovalButtons } from "@/components/goedkeuringen/approval-buttons";
 import { TimeEntryApprovalList } from "@/components/goedkeuringen/time-entry-approval-list";
-import { approveLeave, rejectLeave, approveTimeEntryRequest } from "./actions";
+import { approveLeave, rejectLeave, approveTimeEntryRequest, rejectTimeEntryRequest } from "./actions";
 
 const TYPE_LABEL: Record<string, string> = { VERLOF: "Verlof", ZIEK: "Ziekmelding" };
 
@@ -49,7 +49,11 @@ export default async function GoedkeuringenPage() {
       {timeEntriesWithSchedule.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-muted-foreground">Ingediende tijden</h2>
-          <TimeEntryApprovalList entries={timeEntriesWithSchedule} onApprove={approveTimeEntryRequest} />
+          <TimeEntryApprovalList
+            entries={timeEntriesWithSchedule}
+            onApprove={approveTimeEntryRequest}
+            onReject={rejectTimeEntryRequest}
+          />
         </section>
       )}
 

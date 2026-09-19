@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { formatClockDayLabel, formatClockTime } from "@/lib/dates";
 import { durationHours, formatDuration } from "@/lib/hours";
 
@@ -29,6 +30,7 @@ export function TimeEntryApprovalDialog({
   onOpenChange,
   entry,
   onApprove,
+  onReject,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -38,11 +40,15 @@ export function TimeEntryApprovalDialog({
     correctionMinutes: number,
     reviewNote: string | null
   ) => Promise<{ error?: string } | undefined>;
+  onReject: (entryId: string) => Promise<void>;
 }) {
   const [correctionMinutes, setCorrectionMinutes] = useState("0");
   const [reviewNote, setReviewNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [confirmReject, setConfirmReject] = useState(false);
+  const [rejectChecked, setRejectChecked] = useState(false);
+  const [rejectPending, setRejectPending] = useState(false);
 
   const clockIn = new Date(entry.clockIn);
   const clockOut = new Date(entry.clockOut);
@@ -59,6 +65,53 @@ export function TimeEntryApprovalDialog({
       return;
     }
     onOpenChange(false);
+  }
+
+  async function handleReject() {
+    if (!rejectChecked) return;
+    setRejectPending(true);
+    await onReject(entry.id);
+    setRejectPending(false);
+    onOpenChange(false);
+  }
+
+  if (confirmReject) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tijd afwijzen — {entry.employeeName}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-muted-foreground">
+              Deze registratie wordt volledig verwijderd en verdwijnt ook bij {entry.employeeName}{" "}
+              uit het overzicht bij Inklokken.
+            </p>
+            <label className="flex items-start gap-2.5 rounded-lg border p-3 text-sm">
+              <Checkbox
+                checked={rejectChecked}
+                onCheckedChange={(checked) => setRejectChecked(checked === true)}
+                className="mt-0.5"
+              />
+              <span>Weet je zeker dat je deze registratie wilt afwijzen? Dit kan je niet ongedaan maken.</span>
+            </label>
+          </div>
+          <DialogFooter className="gap-2 sm:justify-between">
+            <Button type="button" variant="outline" onClick={() => setConfirmReject(false)}>
+              Terug
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={!rejectChecked || rejectPending}
+              onClick={handleReject}
+            >
+              {rejectPending ? "Afwijzen…" : "Afwijzen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   return (
@@ -122,11 +175,21 @@ export function TimeEntryApprovalDialog({
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
 
-        <DialogFooter className="gap-2 sm:justify-end">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-            Annuleren
-          </Button>
-          <Button type="button" onClick={handleApprove} disabled={pending}>
+        <DialogFooter className="flex-col sm:flex-col items-stretch gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Annuleren
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="text-destructive"
+              onClick={() => setConfirmReject(true)}
+            >
+              Afwijzen
+            </Button>
+          </div>
+          <Button type="button" onClick={handleApprove} disabled={pending} className="self-end">
             {pending ? "Bezig…" : "Goedkeuren"}
           </Button>
         </DialogFooter>
