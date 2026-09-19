@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { addUTCDays, formatDayLabel, getWeekStart, parseDateKey } from "@/lib/dates";
-import { formatDuration, shiftHours } from "@/lib/hours";
+import { formatDuration, hasShiftEnded, shiftHours } from "@/lib/hours";
 import { PeriodFilter } from "@/components/layout/period-filter";
 import {
   Table,
@@ -25,10 +25,11 @@ export default async function MijnUrenPage({
   const from = params.from ? parseDateKey(params.from) : defaultFrom;
   const to = params.to ? parseDateKey(params.to) : addUTCDays(defaultFrom, 6);
 
-  const shifts = await prisma.shift.findMany({
+  const allShifts = await prisma.shift.findMany({
     where: { assignedUserId: userId, date: { gte: from, lte: to }, status: "PUBLISHED" },
     orderBy: { date: "asc" },
   });
+  const shifts = allShifts.filter(hasShiftEnded);
 
   const totalHours = shifts.reduce(
     (sum, shift) => sum + shiftHours(shift.startTime, shift.endTime, shift.breakMinutes),

@@ -1,6 +1,16 @@
+import { formatTime, getAmsterdamInstant, toDateKey } from "@/lib/dates";
+
 export function shiftHours(startTime: Date, endTime: Date, breakMinutes: number): number {
   const minutes = (endTime.getTime() - startTime.getTime()) / 60000 - breakMinutes;
   return Math.max(0, minutes) / 60;
+}
+
+/** Een geplande dienst telt pas mee als gewerkte uren zodra de eindtijd daadwerkelijk
+ * voorbij is — een dienst die nog moet plaatsvinden staat wel in het rooster, maar
+ * levert nog geen uren op in Mijn uren / Uren totdat de tijd echt verstreken is. */
+export function hasShiftEnded(shift: { date: Date; endTime: Date }): boolean {
+  const endInstant = getAmsterdamInstant(toDateKey(shift.date), formatTime(shift.endTime));
+  return endInstant.getTime() <= Date.now();
 }
 
 export function formatHours(hours: number): string {

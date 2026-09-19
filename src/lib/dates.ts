@@ -142,6 +142,24 @@ export function getAmsterdamDayRangeUtc(dateKey: string): { start: Date; end: Da
   return { start, end };
 }
 
+/** Berekent het échte UTC-tijdstip voor een wandklok-datum+tijd in Europe/Amsterdam
+ * (bv. de eindtijd van een dienst), zodat dit te vergelijken is met de huidige tijd. */
+export function getAmsterdamInstant(dateKey: string, time: string): Date {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const [h, min] = time.split(":").map(Number);
+  const utcGuess = new Date(Date.UTC(y, m - 1, d, h, min, 0));
+
+  const offsetName = new Intl.DateTimeFormat("en-US", {
+    timeZone: AMSTERDAM_TZ,
+    timeZoneName: "shortOffset",
+  })
+    .formatToParts(utcGuess)
+    .find((p) => p.type === "timeZoneName")?.value;
+  const offsetHours = Number(offsetName?.match(/GMT([+-]\d+)/)?.[1] ?? 1);
+
+  return new Date(utcGuess.getTime() - offsetHours * 3_600_000);
+}
+
 /** Kalenderdag (YYYY-MM-DD) in Europe/Amsterdam voor een écht tijdstip — het omgekeerde
  * van getAmsterdamDayRangeUtc(), gebruikt om een TimeEntry aan de juiste Shift.date te koppelen. */
 export function getAmsterdamDateKey(date: Date): string {
