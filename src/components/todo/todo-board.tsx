@@ -148,7 +148,6 @@ export function TodoBoard({
           <h2 className="text-sm font-semibold">Algemene to do&apos;s</h2>
           <Button
             type="button"
-            variant="outline"
             size="sm"
             onClick={() => setSelection({ dateKey: null, todo: null })}
           >
