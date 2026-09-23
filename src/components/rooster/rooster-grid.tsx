@@ -61,7 +61,7 @@ export function RoosterGrid({
       <table className="w-full min-w-[960px] border-collapse text-sm">
         <thead>
           <tr className="border-b">
-            <th className="w-52 border-r p-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <th className="w-52 border-r p-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Medewerker
             </th>
             {days.map((day) => {
@@ -70,14 +70,14 @@ export function RoosterGrid({
                 <th
                   key={day.toISOString()}
                   className={cn(
-                    "min-w-[128px] border-r p-3 text-left align-top last:border-r-0",
+                    "min-w-[128px] border-r p-2 text-left align-top last:border-r-0",
                     today && "bg-accent/50"
                   )}
                 >
                   <div className="text-[11px] font-semibold tracking-wide text-muted-foreground">
                     {getWeekdayShort(day)}
                   </div>
-                  <div className={cn("text-xl font-semibold leading-tight", today ? "text-primary" : "text-foreground")}>
+                  <div className={cn("text-lg font-semibold leading-tight", today ? "text-primary" : "text-foreground")}>
                     {day.getUTCDate()}
                   </div>
                   <div className="text-[11px] text-muted-foreground">{getMonthShort(day)}</div>
@@ -89,8 +89,8 @@ export function RoosterGrid({
         <tbody>
           {staff.map((member) => (
             <tr key={member.id} className="border-b last:border-b-0">
-              <td className="border-r p-3 align-top">
-                <div className="flex items-center gap-2.5">
+              <td className="border-r p-2 align-top">
+                <div className="flex items-center gap-2">
                   <UserAvatar name={member.name} />
                   <div className="flex min-w-0 flex-col gap-0.5">
                     <span className="truncate font-medium">{member.name}</span>
@@ -106,13 +106,13 @@ export function RoosterGrid({
                 return (
                   <td
                     key={dateKey}
-                    className={cn("min-h-16 border-r p-1.5 align-top last:border-r-0", today && "bg-accent/15")}
+                    className={cn("border-r p-1 align-top last:border-r-0", today && "bg-accent/15")}
                   >
                     {leave && (
                       <button
                         type="button"
                         onClick={() => setSelectedLeave(leave)}
-                        className="mb-1 w-full rounded-lg px-2 py-1.5 text-left text-xs font-medium text-white shadow-sm transition-transform hover:-translate-y-px"
+                        className="mb-0.5 w-full rounded-lg px-2 py-1 text-left text-xs font-medium text-white shadow-sm transition-transform hover:-translate-y-px"
                         style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
                       >
                         {LEAVE_LABEL[leave.type]}
@@ -121,18 +121,18 @@ export function RoosterGrid({
                     <button
                       type="button"
                       onClick={() => setSelection({ staffId: member.id, dateKey, shift: null })}
-                      className="mb-1 flex min-h-14 w-full items-center justify-center rounded-lg border border-dashed border-transparent text-muted-foreground hover:border-border hover:bg-accent/40"
+                      className="mb-0.5 flex min-h-8 w-full items-center justify-center rounded-lg border border-dashed border-transparent text-muted-foreground hover:border-border hover:bg-accent/40"
                     >
                       {cellShifts.length === 0 && <Plus className="size-4" strokeWidth={2} />}
                     </button>
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-0.5">
                       {cellShifts.map((shift) => (
                         <button
                           key={shift.id}
                           type="button"
                           onClick={() => setSelection({ staffId: member.id, dateKey, shift })}
                           className={cn(
-                            "w-full rounded-lg bg-primary px-2.5 py-1.5 text-left text-primary-foreground shadow-sm transition-transform hover:-translate-y-px",
+                            "w-full rounded-lg bg-primary px-2 py-1 text-left text-primary-foreground shadow-sm transition-transform hover:-translate-y-px",
                             shift.status === "DRAFT" && "opacity-55"
                           )}
                         >

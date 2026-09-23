@@ -50,7 +50,7 @@ export function StaffWeekGrid({
       <table className="w-full min-w-[960px] border-collapse text-sm">
         <thead>
           <tr className="border-b">
-            <th className="w-52 border-r p-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <th className="w-52 border-r p-2 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Medewerker
             </th>
             {days.map((day) => {
@@ -59,14 +59,14 @@ export function StaffWeekGrid({
                 <th
                   key={day.toISOString()}
                   className={cn(
-                    "min-w-[128px] border-r p-3 text-left align-top last:border-r-0",
+                    "min-w-[128px] border-r p-2 text-left align-top last:border-r-0",
                     today && "bg-accent/50"
                   )}
                 >
                   <div className="text-[11px] font-semibold tracking-wide text-muted-foreground">
                     {getWeekdayShort(day)}
                   </div>
-                  <div className={cn("text-xl font-semibold leading-tight", today ? "text-primary" : "text-foreground")}>
+                  <div className={cn("text-lg font-semibold leading-tight", today ? "text-primary" : "text-foreground")}>
                     {day.getUTCDate()}
                   </div>
                   <div className="text-[11px] text-muted-foreground">{getMonthShort(day)}</div>
@@ -78,8 +78,8 @@ export function StaffWeekGrid({
         <tbody>
           {staff.map((member) => (
             <tr key={member.id} className="border-b last:border-b-0">
-              <td className="border-r p-3 align-top">
-                <div className="flex items-center gap-2.5">
+              <td className="border-r p-2 align-top">
+                <div className="flex items-center gap-2">
                   <UserAvatar name={member.name} />
                   <span className="font-medium">{member.name}</span>
                 </div>
@@ -92,12 +92,12 @@ export function StaffWeekGrid({
                 return (
                   <td
                     key={dateKey}
-                    className={cn("min-h-16 border-r p-1.5 align-top last:border-r-0", today && "bg-accent/15")}
+                    className={cn("border-r p-1 align-top last:border-r-0", today && "bg-accent/15")}
                   >
-                    <div className="flex flex-col gap-1">
+                    <div className="flex flex-col gap-0.5">
                       {leave && (
                         <div
-                          className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-white shadow-sm"
+                          className="rounded-lg px-2 py-1 text-xs font-medium text-white shadow-sm"
                           style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
                         >
                           {LEAVE_LABEL[leave.type]}
@@ -108,7 +108,7 @@ export function StaffWeekGrid({
                           key={shift.id}
                           type="button"
                           onClick={() => setSelectedShift(shift)}
-                          className="w-full rounded-lg bg-primary px-2.5 py-1.5 text-left text-primary-foreground shadow-sm transition-transform hover:-translate-y-px"
+                          className="w-full rounded-lg bg-primary px-2 py-1 text-left text-primary-foreground shadow-sm transition-transform hover:-translate-y-px"
                         >
                           <div className="text-xs font-semibold">
                             {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
