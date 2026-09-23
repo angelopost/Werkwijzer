@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { addUTCDays, formatDayLabel, getWeekStart, parseDateKey } from "@/lib/dates";
+import { addUTCDays, formatDayLabel, getAmsterdamToday, getWeekStart, parseDateKey } from "@/lib/dates";
 import { formatDuration, hasShiftEnded, shiftHours } from "@/lib/hours";
 import { PeriodFilter } from "@/components/layout/period-filter";
 import {
@@ -21,7 +21,7 @@ export default async function MijnUrenPage({
   const userId = session!.user.id;
 
   const params = await searchParams;
-  const defaultFrom = getWeekStart(new Date());
+  const defaultFrom = getWeekStart(getAmsterdamToday());
   const from = params.from ? parseDateKey(params.from) : defaultFrom;
   const to = params.to ? parseDateKey(params.to) : addUTCDays(defaultFrom, 6);
 

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
+import { getAmsterdamToday, getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
 import { materializePermanentTodos } from "@/lib/permanent-todos";
 import { fetchTodoBoardItems } from "@/lib/todo-queries";
 import { TodoBoard } from "@/components/todo/todo-board";
@@ -14,11 +14,10 @@ export default async function TodoMedewerkersPage({
   const params = await searchParams;
   const isToday = params.view === "vandaag";
 
-  const today = new Date();
-  const todayDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  const today = getAmsterdamToday();
   const weekStart = params.week ? parseDateKey(params.week) : getWeekStart(today);
 
-  const days = isToday ? [todayDate] : getWeekDays(weekStart);
+  const days = isToday ? [today] : getWeekDays(weekStart);
   const from = days[0];
   const to = days[days.length - 1];
 

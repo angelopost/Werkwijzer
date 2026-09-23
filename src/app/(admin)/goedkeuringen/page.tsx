@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatLeaveRangeLabel, formatTime, getAmsterdamDateKey } from "@/lib/dates";
+import { formatLeaveRangeLabel, formatTime, getAmsterdamDateKey, parseDateKey, toDateKey } from "@/lib/dates";
 import { ApprovalButtons } from "@/components/goedkeuringen/approval-buttons";
 import { TimeEntryApprovalList } from "@/components/goedkeuringen/time-entry-approval-list";
 import { approveLeave, rejectLeave, approveTimeEntryRequest, rejectTimeEntryRequest } from "./actions";
@@ -21,22 +21,37 @@ export default async function GoedkeuringenPage() {
     }),
   ]);
 
-  const timeEntriesWithSchedule = await Promise.all(
-    pendingTimeEntries.map(async (entry) => {
-      const dateKey = getAmsterdamDateKey(entry.clockIn);
-      const shift = await prisma.shift.findFirst({
-        where: { assignedUserId: entry.userId, date: new Date(`${dateKey}T00:00:00Z`) },
-      });
-      return {
-        id: entry.id,
-        employeeName: entry.user.name,
-        clockIn: entry.clockIn.toISOString(),
-        clockOut: entry.clockOut!.toISOString(),
-        scheduledStartTime: shift ? formatTime(shift.startTime) : null,
-        scheduledEndTime: shift ? formatTime(shift.endTime) : null,
-      };
-    })
+  // Eén query voor de eventueel geplande diensten van alle ingediende tijden samen,
+  // in plaats van een aparte query per registratie.
+  const entryDateKeys = pendingTimeEntries.map((e) => getAmsterdamDateKey(e.clockIn));
+  const relevantShifts =
+    pendingTimeEntries.length > 0
+      ? await prisma.shift.findMany({
+          where: {
+            assignedUserId: { in: [...new Set(pendingTimeEntries.map((e) => e.userId))] },
+            date: {
+              gte: parseDateKey(entryDateKeys.reduce((min, k) => (k < min ? k : min))),
+              lte: parseDateKey(entryDateKeys.reduce((max, k) => (k > max ? k : max))),
+            },
+          },
+        })
+      : [];
+  const shiftByUserDate = new Map(
+    relevantShifts.map((s) => [`${s.assignedUserId}_${toDateKey(s.date)}`, s])
   );
+
+  const timeEntriesWithSchedule = pendingTimeEntries.map((entry) => {
+    const dateKey = getAmsterdamDateKey(entry.clockIn);
+    const shift = shiftByUserDate.get(`${entry.userId}_${dateKey}`);
+    return {
+      id: entry.id,
+      employeeName: entry.user.name,
+      clockIn: entry.clockIn.toISOString(),
+      clockOut: entry.clockOut!.toISOString(),
+      scheduledStartTime: shift ? formatTime(shift.startTime) : null,
+      scheduledEndTime: shift ? formatTime(shift.endTime) : null,
+    };
+  });
 
   const hasNothing = leaveRequests.length === 0 && timeEntriesWithSchedule.length === 0;
 

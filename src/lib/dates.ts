@@ -46,13 +46,13 @@ export function getWeekdayFullLabel(date: Date): string {
 
 /** Calendar dates (Shift.date, week boundaries, …) are represented as UTC-midnight
  * Date objects so they round-trip correctly through Postgres `@db.Date` columns
- * regardless of the server's local timezone. */
+ * regardless of the server's local timezone. Reads `reference` via UTC getters (not
+ * local ones) so it always agrees with toDateKey()/parseDateKey() on what day it is,
+ * regardless of the server's local timezone — pass getAmsterdamToday() for "this week". */
 export function getWeekStart(reference: Date): Date {
-  const localDay = reference.getDay(); // 0 = Sunday
-  const mondayOffset = (localDay + 6) % 7; // days since most recent Monday
-  return new Date(
-    Date.UTC(reference.getFullYear(), reference.getMonth(), reference.getDate() - mondayOffset)
-  );
+  const day = reference.getUTCDay(); // 0 = zondag
+  const mondayOffset = (day + 6) % 7; // dagen sinds de meest recente maandag
+  return addUTCDays(reference, -mondayOffset);
 }
 
 export function getWeekDays(weekStart: Date): Date[] {
@@ -86,7 +86,7 @@ export function getMonthShort(date: Date): string {
 }
 
 export function isToday(date: Date): boolean {
-  return toDateKey(date) === toDateKey(new Date());
+  return toDateKey(date) === toDateKey(getAmsterdamToday());
 }
 
 export function formatWeekRangeLabel(weekStart: Date): string {
@@ -171,6 +171,14 @@ export function getAmsterdamDateKey(date: Date): string {
   }).formatToParts(date);
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
   return `${get("year")}-${get("month")}-${get("day")}`;
+}
+
+/** "Vandaag" volgens Europe/Amsterdam, als kalenderdatum (UTC-middernacht-label,
+ * consistent met toDateKey()/parseDateKey()) — ongeacht de tijdzone van de server
+ * waarop dit draait. Gebruik dit i.p.v. `new Date()` voor "welke dag/week is het",
+ * zodat de app niet een paar uur achterloopt op Amsterdam rond middernacht. */
+export function getAmsterdamToday(): Date {
+  return parseDateKey(getAmsterdamDateKey(new Date()));
 }
 
 /** Waarde voor een <input type="datetime-local">, gebaseerd op de lokale tijd van de

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatWeekRangeLabel, getWeekStart, shiftWeek, toDateKey } from "@/lib/dates";
+import { formatWeekRangeLabel, getAmsterdamToday, getWeekStart, shiftWeek, toDateKey } from "@/lib/dates";
 
 export function WeekNav({ basePath, weekStart }: { basePath: string; weekStart: Date }) {
   const prevWeekKey = toDateKey(shiftWeek(weekStart, -1));
   const nextWeekKey = toDateKey(shiftWeek(weekStart, 1));
-  const todayWeekKey = toDateKey(getWeekStart(new Date()));
+  const todayWeekKey = toDateKey(getWeekStart(getAmsterdamToday()));
 
   return (
     <div className="flex items-center gap-2">

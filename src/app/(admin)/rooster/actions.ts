@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/db";
-import { combineDateAndTime, getWeekDays, getWeekdayIndex, parseDateKey, toDateKey } from "@/lib/dates";
+import {
+  combineDateAndTime,
+  getAmsterdamToday,
+  getWeekDays,
+  getWeekdayIndex,
+  parseDateKey,
+} from "@/lib/dates";
 import { createPermanentShift } from "@/lib/permanent-shifts";
 import { shiftFormSchema } from "@/lib/validation/shift";
 import { leaveFormSchema } from "@/lib/validation/leave";
@@ -77,7 +83,7 @@ export async function deleteShift(shiftId: string) {
  * blijven staan voor het urenoverzicht) en zorgt dat er niets meer wordt bijgevuld. */
 export async function deletePermanentShift(permanentShiftId: string) {
   await requireAdmin();
-  const today = parseDateKey(toDateKey(new Date()));
+  const today = getAmsterdamToday();
 
   await prisma.shift.deleteMany({
     where: { permanentShiftId, date: { gte: today } },

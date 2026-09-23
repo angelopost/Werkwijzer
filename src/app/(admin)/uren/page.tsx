@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { addUTCDays, formatDayLabel, getWeekStart, parseDateKey } from "@/lib/dates";
+import { addUTCDays, formatDayLabel, getAmsterdamToday, getWeekStart, parseDateKey } from "@/lib/dates";
 import { formatDuration, hasShiftEnded, shiftHours } from "@/lib/hours";
 import { UrenFilters } from "@/components/uren/uren-filters";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -18,7 +18,7 @@ export default async function UrenPage({
   searchParams: Promise<{ from?: string; to?: string; userId?: string }>;
 }) {
   const params = await searchParams;
-  const defaultFrom = getWeekStart(new Date());
+  const defaultFrom = getWeekStart(getAmsterdamToday());
   const from = params.from ? parseDateKey(params.from) : defaultFrom;
   const to = params.to ? parseDateKey(params.to) : addUTCDays(defaultFrom, 6);
 

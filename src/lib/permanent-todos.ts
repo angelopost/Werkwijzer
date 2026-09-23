@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { addUTCDays, getWeekdayIndex, toDateKey } from "@/lib/dates";
+import { addUTCDays, getAmsterdamToday, getWeekdayIndex, toDateKey } from "@/lib/dates";
 import type { TodoPriority } from "@/generated/prisma/enums";
 
 /** Hoe ver vooruit to do's direct worden aangemaakt zodra een vast patroon wordt ingesteld. */
@@ -115,11 +115,11 @@ export async function createPermanentTodo(input: {
 /** Verwijdert een heel vast to-do-patroon (alleen nog komende to do's; voorbije blijven
  * staan) en zorgt dat er niets meer wordt bijgevuld. */
 export async function deletePermanentTodo(permanentTodoId: string) {
-  const todayKey = toDateKey(new Date());
-  const today = new Date(`${todayKey}T00:00:00Z`);
+  const today = getAmsterdamToday();
 
   await prisma.todo.deleteMany({
     where: { permanentTodoId, date: { gte: today } },
   });
-  await prisma.permanentTodo.delete({ where: { id: permanentTodoId } });
+  const deleted = await prisma.permanentTodo.delete({ where: { id: permanentTodoId } });
+  return { forStaff: deleted.forStaff };
 }

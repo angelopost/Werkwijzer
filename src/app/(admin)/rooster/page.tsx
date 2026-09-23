@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
+import { getAmsterdamToday, getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
 import { materializePermanentShiftsForWeek } from "@/lib/permanent-shifts";
 import { RoosterGrid } from "@/components/rooster/rooster-grid";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ export default async function RoosterPage({
   searchParams: Promise<{ week?: string }>;
 }) {
   const params = await searchParams;
-  const weekStart = params.week ? parseDateKey(params.week) : getWeekStart(new Date());
+  const weekStart = params.week ? parseDateKey(params.week) : getWeekStart(getAmsterdamToday());
   const weekStartKey = toDateKey(weekStart);
   const days = getWeekDays(weekStart);
   const from = days[0];

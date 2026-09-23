@@ -13,12 +13,15 @@ function resolveAssigneeId(value: string | undefined): string | null {
   return value && value !== "algemeen" ? value : null;
 }
 
-/** Alle drie de schermen die to do's tonen worden opnieuw opgehaald, ongeacht welke
- * van de twee (intern of medewerkers) het betreft — dat houdt dit simpel. */
-function revalidateTodoPaths() {
-  revalidatePath("/todo");
-  revalidatePath("/todo-medewerkers");
-  revalidatePath("/mijn-to-do");
+/** Alleen de schermen verversen die de gewijzigde to do daadwerkelijk kunnen tonen,
+ * in plaats van altijd alle drie — scheelt onnodig herladen bij elke actie. */
+function revalidateTodoPaths(forStaff: boolean) {
+  if (forStaff) {
+    revalidatePath("/todo-medewerkers");
+    revalidatePath("/mijn-to-do");
+  } else {
+    revalidatePath("/todo");
+  }
 }
 
 export async function createTodo(
@@ -69,7 +72,7 @@ export async function createTodo(
     });
   }
 
-  revalidateTodoPaths();
+  revalidateTodoPaths(forStaff);
   return { success: true };
 }
 
@@ -121,7 +124,7 @@ export async function updateTodo(
     });
   }
 
-  revalidateTodoPaths();
+  revalidateTodoPaths(forStaff);
   return { success: true };
 }
 
@@ -137,7 +140,7 @@ export async function toggleTodoCompleted(todoId: string) {
       completedAt: completed ? new Date() : null,
     },
   });
-  revalidateTodoPaths();
+  revalidateTodoPaths(todo.forStaff);
 }
 
 /** Verwijdert één losse to do. Hoort deze bij een vast patroon, dan wordt de datum
@@ -156,11 +159,11 @@ export async function deleteTodo(todoId: string) {
     });
   }
 
-  revalidateTodoPaths();
+  revalidateTodoPaths(todo.forStaff);
 }
 
 export async function deleteAllPermanentTodos(permanentTodoId: string) {
   await requireAdmin();
-  await deletePermanentTodoLib(permanentTodoId);
-  revalidateTodoPaths();
+  const { forStaff } = await deletePermanentTodoLib(permanentTodoId);
+  revalidateTodoPaths(forStaff);
 }
