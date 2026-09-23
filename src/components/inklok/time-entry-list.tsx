@@ -46,76 +46,141 @@ export function TimeEntryList({
   const showStatus = onSubmit !== undefined || entries.some((e) => e.status);
 
   return (
-    <div className="rounded-md border bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {showEmployee && <TableHead>Medewerker</TableHead>}
-            <TableHead>Datum</TableHead>
-            <TableHead>Ingeklokt</TableHead>
-            <TableHead>Uitgeklokt</TableHead>
-            <TableHead>Duur</TableHead>
-            {showStatus && <TableHead>Status</TableHead>}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {entries.map((entry) => {
-            const clockIn = new Date(entry.clockIn);
-            const clockOut = entry.clockOut ? new Date(entry.clockOut) : null;
-            return (
-              <TableRow
-                key={entry.id}
-                onClick={onSelect ? () => onSelect(entry) : undefined}
-                className={cn(onSelect && "cursor-pointer")}
-              >
-                {showEmployee && <TableCell className="font-medium">{entry.employeeName}</TableCell>}
-                <TableCell className={cn(!showEmployee && "font-medium")}>
-                  {formatClockDayLabel(clockIn)}
-                </TableCell>
-                <TableCell>{formatClockTime(clockIn)}</TableCell>
-                <TableCell>
-                  {clockOut ? (
-                    formatClockTime(clockOut)
-                  ) : (
-                    <Badge variant="secondary">Nog bezig</Badge>
+    <>
+      {/* Mobiel: kaarten per registratie, met de Indienen-knop onder de gegevens in
+       * plaats van in een kolom die je pas ziet na naar rechts te scrollen. */}
+      <div className="flex flex-col gap-2 md:hidden">
+        {entries.map((entry) => {
+          const clockIn = new Date(entry.clockIn);
+          const clockOut = entry.clockOut ? new Date(entry.clockOut) : null;
+          return (
+            <div
+              key={entry.id}
+              onClick={onSelect ? () => onSelect(entry) : undefined}
+              className={cn(
+                "flex flex-col gap-2 rounded-xl border bg-card p-3",
+                onSelect && "cursor-pointer"
+              )}
+            >
+              {showEmployee && <p className="text-sm font-medium">{entry.employeeName}</p>}
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium">{formatClockDayLabel(clockIn)}</span>
+                {clockOut ? (
+                  <span className="text-muted-foreground">
+                    {formatClockTime(clockIn)} - {formatClockTime(clockOut)}
+                  </span>
+                ) : (
+                  <Badge variant="secondary">Nog bezig</Badge>
+                )}
+              </div>
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>Duur</span>
+                <span>{clockOut ? formatDuration(durationHours(clockIn, clockOut)) : "—"}</span>
+              </div>
+
+              {showStatus && entry.status && (
+                <div className="flex flex-col gap-0.5">
+                  <Badge variant={entry.status === "APPROVED" ? "default" : "secondary"} className="self-start">
+                    {STATUS_LABEL[entry.status]}
+                  </Badge>
+                  {entry.status === "APPROVED" && !!entry.correctionMinutes && (
+                    <span className="text-xs text-muted-foreground">
+                      Correctie: {entry.correctionMinutes > 0 ? "+" : ""}
+                      {entry.correctionMinutes} min
+                    </span>
                   )}
-                </TableCell>
-                <TableCell>{clockOut ? formatDuration(durationHours(clockIn, clockOut)) : "—"}</TableCell>
-                {showStatus && (
+                </div>
+              )}
+
+              {!entry.status && clockOut && onSubmit && (
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSubmit(entry.id);
+                  }}
+                >
+                  Indienen
+                </Button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Desktop/tablet: tabelweergave. */}
+      <div className="hidden rounded-md border bg-card md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {showEmployee && <TableHead>Medewerker</TableHead>}
+              <TableHead>Datum</TableHead>
+              <TableHead>Ingeklokt</TableHead>
+              <TableHead>Uitgeklokt</TableHead>
+              <TableHead>Duur</TableHead>
+              {showStatus && <TableHead>Status</TableHead>}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {entries.map((entry) => {
+              const clockIn = new Date(entry.clockIn);
+              const clockOut = entry.clockOut ? new Date(entry.clockOut) : null;
+              return (
+                <TableRow
+                  key={entry.id}
+                  onClick={onSelect ? () => onSelect(entry) : undefined}
+                  className={cn(onSelect && "cursor-pointer")}
+                >
+                  {showEmployee && <TableCell className="font-medium">{entry.employeeName}</TableCell>}
+                  <TableCell className={cn(!showEmployee && "font-medium")}>
+                    {formatClockDayLabel(clockIn)}
+                  </TableCell>
+                  <TableCell>{formatClockTime(clockIn)}</TableCell>
                   <TableCell>
-                    {entry.status ? (
-                      <div className="flex flex-col gap-0.5">
-                        <Badge variant={entry.status === "APPROVED" ? "default" : "secondary"}>
-                          {STATUS_LABEL[entry.status]}
-                        </Badge>
-                        {entry.status === "APPROVED" && !!entry.correctionMinutes && (
-                          <span className="text-xs text-muted-foreground">
-                            Correctie: {entry.correctionMinutes > 0 ? "+" : ""}
-                            {entry.correctionMinutes} min
-                          </span>
-                        )}
-                      </div>
-                    ) : clockOut && onSubmit ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSubmit(entry.id);
-                        }}
-                      >
-                        Indienen
-                      </Button>
+                    {clockOut ? (
+                      formatClockTime(clockOut)
                     ) : (
-                      "—"
+                      <Badge variant="secondary">Nog bezig</Badge>
                     )}
                   </TableCell>
-                )}
-              </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
-    </div>
+                  <TableCell>{clockOut ? formatDuration(durationHours(clockIn, clockOut)) : "—"}</TableCell>
+                  {showStatus && (
+                    <TableCell>
+                      {entry.status ? (
+                        <div className="flex flex-col gap-0.5">
+                          <Badge variant={entry.status === "APPROVED" ? "default" : "secondary"}>
+                            {STATUS_LABEL[entry.status]}
+                          </Badge>
+                          {entry.status === "APPROVED" && !!entry.correctionMinutes && (
+                            <span className="text-xs text-muted-foreground">
+                              Correctie: {entry.correctionMinutes > 0 ? "+" : ""}
+                              {entry.correctionMinutes} min
+                            </span>
+                          )}
+                        </div>
+                      ) : clockOut && onSubmit ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onSubmit(entry.id);
+                          }}
+                        >
+                          Indienen
+                        </Button>
+                      ) : (
+                        "—"
+                      )}
+                    </TableCell>
+                  )}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 }
