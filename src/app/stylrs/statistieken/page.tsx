@@ -17,12 +17,14 @@ import { PageHeader } from "@/components/stylrs/page-header";
 import { StatCard } from "@/components/stylrs/stat-card";
 import { WeekdayBarChart } from "@/components/stylrs/statistieken/weekday-bar-chart";
 import { formatCurrency } from "@/lib/stylrs/format";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 export default async function StatistiekenPage() {
   const user = await requireOwner();
   const stats = await getStatistics(user.salonId);
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader title="Statistieken" description="Zo presteert jouw salon." />
 
@@ -49,5 +51,6 @@ export default async function StatistiekenPage() {
         <WeekdayBarChart counts={stats.weekdayCounts} />
       </div>
     </div>
+    </StylrsAppShellGuard>
   );
 }

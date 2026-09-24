@@ -6,6 +6,7 @@ import { BookingLinkCard } from "@/components/stylrs/instellingen/booking-link-c
 import { SalonInfoForm } from "@/components/stylrs/instellingen/salon-info-form";
 import { OpeningHoursForm } from "@/components/stylrs/instellingen/opening-hours-form";
 import { BookingSettingsForm } from "@/components/stylrs/instellingen/booking-settings-form";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 export default async function InstellingenPage() {
   const user = await requireOwner();
@@ -16,6 +17,7 @@ export default async function InstellingenPage() {
   });
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader title="Instellingen" description="Beheer je salongegevens, openingstijden en boekingsregels." />
 
@@ -40,5 +42,6 @@ export default async function InstellingenPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </StylrsAppShellGuard>
   );
 }

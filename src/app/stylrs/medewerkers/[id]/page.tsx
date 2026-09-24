@@ -7,6 +7,7 @@ import { EmployeeProfileForm } from "@/components/stylrs/medewerkers/employee-pr
 import { AvailabilityEditor } from "@/components/stylrs/medewerkers/availability-editor";
 import { TimeOffList } from "@/components/stylrs/medewerkers/time-off-list";
 import { ServicesEditor } from "@/components/stylrs/medewerkers/services-editor";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 export default async function EmployeeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -31,6 +32,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
   });
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader
         title={`${employee.firstName} ${employee.lastName}`}
@@ -62,5 +64,6 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
         </TabsContent>
       </Tabs>
     </div>
+    </StylrsAppShellGuard>
   );
 }

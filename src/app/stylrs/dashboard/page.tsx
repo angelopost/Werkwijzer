@@ -5,12 +5,14 @@ import { PageHeader } from "@/components/stylrs/page-header";
 import { StatCard } from "@/components/stylrs/stat-card";
 import { EmptyState } from "@/components/stylrs/empty-state";
 import { formatCurrency, formatTime } from "@/lib/stylrs/format";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 export default async function DashboardPage() {
   const user = await requireSalonUser();
   const data = await getDashboardData(user.salonId);
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader title={`Welkom terug, ${user.name.split(" ")[0]}`} description="Zo staat de salon er vandaag voor." />
 
@@ -87,5 +89,6 @@ export default async function DashboardPage() {
         </div>
       </div>
     </div>
+    </StylrsAppShellGuard>
   );
 }

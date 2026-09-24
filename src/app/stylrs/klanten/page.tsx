@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Users, Search } from "lucide-react";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 export default async function KlantenPage({
   searchParams,
@@ -36,6 +37,7 @@ export default async function KlantenPage({
   });
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader
         title="Klanten"
@@ -96,5 +98,6 @@ export default async function KlantenPage({
         </div>
       )}
     </div>
+    </StylrsAppShellGuard>
   );
 }

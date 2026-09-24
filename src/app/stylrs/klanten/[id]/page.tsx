@@ -10,6 +10,7 @@ import { CustomerNotes } from "@/components/stylrs/klanten/customer-notes";
 import { formatCurrency, formatDateLong } from "@/lib/stylrs/format";
 import { CalendarClock, Repeat, Heart, UserCheck } from "lucide-react";
 import { StatCard } from "@/components/stylrs/stat-card";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 export default async function CustomerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -27,6 +28,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   const stats = await getCustomerStats(customer.id);
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader
         title={`${customer.firstName} ${customer.lastName}`}
@@ -83,5 +85,6 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
         </TabsContent>
       </Tabs>
     </div>
+    </StylrsAppShellGuard>
   );
 }

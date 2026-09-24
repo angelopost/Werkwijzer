@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 
-export default function StylrsAuthLayout({ children }: { children: React.ReactNode }) {
+/// Gedeelde omlijsting voor /stylrs/login en /stylrs/registreren. Bewust een
+/// gewone component (geen route-group layout) zodat de paginastructuur onder
+/// /stylrs plat blijft.
+export function StylrsAuthShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-svh items-center justify-center bg-muted p-4">
       <div className="flex w-full max-w-sm flex-col gap-6">

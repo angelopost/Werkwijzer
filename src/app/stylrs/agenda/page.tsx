@@ -11,6 +11,7 @@ import { NewAppointmentDialog } from "@/components/stylrs/agenda/new-appointment
 import { EmptyState } from "@/components/stylrs/empty-state";
 import { Button } from "@/components/ui/button";
 import { CalendarDays } from "lucide-react";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 export default async function AgendaPage({
   searchParams,
@@ -84,6 +85,7 @@ export default async function AgendaPage({
   }));
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader
         title="Agenda"
@@ -115,5 +117,6 @@ export default async function AgendaPage({
         />
       )}
     </div>
+    </StylrsAppShellGuard>
   );
 }

@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/stylrs/page-header";
 import { Button } from "@/components/ui/button";
 import { ServiceFormDialog } from "@/components/stylrs/behandelingen/service-form-dialog";
 import { ServiceTable } from "@/components/stylrs/behandelingen/service-table";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 export default async function BehandelingenPage() {
   const user = await requireOwner();
@@ -27,6 +28,7 @@ export default async function BehandelingenPage() {
   }));
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader
         title="Behandelingen"
@@ -40,5 +42,6 @@ export default async function BehandelingenPage() {
       />
       <ServiceTable services={rows} employees={employees} />
     </div>
+    </StylrsAppShellGuard>
   );
 }

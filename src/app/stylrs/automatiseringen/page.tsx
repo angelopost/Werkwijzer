@@ -3,6 +3,7 @@ import { requireOwner } from "@/lib/stylrs/permissions";
 import { PageHeader } from "@/components/stylrs/page-header";
 import { EmailSettingsForm } from "@/components/stylrs/instellingen/email-settings-form";
 import { UserX } from "lucide-react";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 export default async function AutomatiseringenPage() {
   const user = await requireOwner();
@@ -12,6 +13,7 @@ export default async function AutomatiseringenPage() {
   });
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader
         title="Automatiseringen"
@@ -34,5 +36,6 @@ export default async function AutomatiseringenPage() {
         </div>
       </div>
     </div>
+    </StylrsAppShellGuard>
   );
 }

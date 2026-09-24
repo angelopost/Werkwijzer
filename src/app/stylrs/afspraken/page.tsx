@@ -6,6 +6,7 @@ import { AppointmentsTable } from "@/components/stylrs/afspraken/appointments-ta
 import { CalendarX } from "lucide-react";
 import type { AgendaAppointment } from "@/components/stylrs/agenda/agenda-grid";
 import Link from "next/link";
+import { StylrsAppShellGuard } from "@/components/stylrs/layout/app-shell-guard";
 
 const FILTERS = {
   aankomend: "Aankomend",
@@ -60,6 +61,7 @@ export default async function AfsprakenPage({
   }));
 
   return (
+    <StylrsAppShellGuard>
     <div>
       <PageHeader title="Afspraken" description="Alle afspraken van jouw salon op een rij." />
 
@@ -83,5 +85,6 @@ export default async function AfsprakenPage({
         <AppointmentsTable appointments={rows} employees={employees} />
       )}
     </div>
+    </StylrsAppShellGuard>
   );
 }
