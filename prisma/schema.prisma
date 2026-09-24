@@ -309,3 +309,281 @@ model Notification {
 
   @@index([userId, read])
 }
+
+// ============================================================================
+// STYLRS — losstaand SaaS-boekingsplatform voor kapsalons/barbershops.
+// Volledig gescheiden van de Werkwijzer-modellen hierboven (los inlogsysteem,
+// eigen entiteiten). Elke tabel hangt aan salonId zodat scheiding tussen
+// salons (multi-tenancy) ook op databaseniveau is afgedwongen.
+// ============================================================================
+
+enum SalonUserRole {
+  OWNER
+  STAFF
+}
+
+enum AppointmentStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}
+
+enum AppointmentSource {
+  MANUAL
+  ONLINE
+}
+
+model Salon {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+
+  email       String?
+  phone       String?
+  address     String?
+  postalCode  String?
+  city        String?
+  website     String?
+  logoUrl     String?
+  timezone    String   @default("Europe/Amsterdam")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users           SalonUser[]
+  employees       Employee[]
+  services        Service[]
+  customers       Customer[]
+  appointments    Appointment[]
+  openingHours    OpeningHours[]
+  bookingSettings BookingSettings?
+  emailSettings   EmailAutomationSettings?
+}
+
+/// Login-account voor een salon. OWNER heeft volledige toegang, STAFF beperkt
+/// (eigen agenda/afspraken). Een STAFF-account kan gekoppeld zijn aan een
+/// Employee-profiel voor "eigen agenda"; dit is optioneel voor OWNER.
+model SalonUser {
+  id           String        @id @default(cuid())
+  salonId      String
+  salon        Salon         @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  name         String
+  email        String        @unique
+  passwordHash String
+  role         SalonUserRole @default(OWNER)
+  isActive     Boolean       @default(true)
+
+  employeeId   String?       @unique
+  employee     Employee?     @relation(fields: [employeeId], references: [id], onDelete: SetNull)
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([salonId])
+}
+
+model Employee {
+  id        String   @id @default(cuid())
+  salonId   String
+  salon     Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String
+  photoUrl  String?
+  email     String?
+  phone     String?
+  function  String?
+  /// Hexcode (bv. #7C5CFC) voor herkenbare kleur in de agenda.
+  color     String   @default("#7C5CFC")
+  active    Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  loginAccount SalonUser?
+  availability EmployeeAvailability[]
+  timeOff      TimeOff[]
+  services     EmployeeService[]
+  appointments Appointment[]
+
+  @@index([salonId])
+}
+
+/// Werktijden van een medewerker per weekdag. 0 = maandag … 6 = zondag.
+/// Geen rij voor een weekdag betekent: die dag werkt de medewerker niet.
+model EmployeeAvailability {
+  id         String   @id @default(cuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  weekday        Int
+  startTime      String
+  endTime        String
+  breakStartTime String?
+  breakEndTime   String?
+
+  @@unique([employeeId, weekday])
+}
+
+/// Vrije dag(en) / vakantie van een medewerker.
+model TimeOff {
+  id         String   @id @default(cuid())
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  reason    String?
+
+  createdAt DateTime @default(now())
+
+  @@index([employeeId, startDate, endDate])
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  salonId     String
+  salon       Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  name            String
+  description     String?
+  price           Decimal  @db.Decimal(10, 2)
+  durationMinutes Int
+  category        String?
+  active          Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees    EmployeeService[]
+  appointments Appointment[]
+
+  @@index([salonId])
+}
+
+model EmployeeService {
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  serviceId  String
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@id([employeeId, serviceId])
+}
+
+model Customer {
+  id      String @id @default(cuid())
+  salonId String
+  salon   Salon  @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  appointments Appointment[]
+  notes        CustomerNote[]
+
+  @@index([salonId])
+  @@index([salonId, email])
+  @@index([salonId, phone])
+}
+
+/// Interne notitie van een medewerker bij een klant. Uitsluitend zichtbaar
+/// binnen de salon.
+model CustomerNote {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  body      String
+  createdAt DateTime @default(now())
+
+  @@index([customerId])
+}
+
+model Appointment {
+  id      String @id @default(cuid())
+  salonId String
+  salon   Salon  @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  serviceId  String
+  service    Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  startTime DateTime
+  endTime   DateTime
+  /// Prijs op het moment van boeken (blijft ongewijzigd als de behandelprijs later wijzigt).
+  price     Decimal            @db.Decimal(10, 2)
+  status    AppointmentStatus  @default(CONFIRMED)
+  source    AppointmentSource  @default(MANUAL)
+  note      String?
+
+  confirmationSentAt DateTime?
+  reminderSentAt     DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([salonId, startTime])
+  @@index([employeeId, startTime])
+  @@index([status])
+}
+
+/// Openingstijden van de salon per weekdag. 0 = maandag … 6 = zondag.
+/// isClosed = true betekent gesloten die dag.
+model OpeningHours {
+  id      String @id @default(cuid())
+  salonId String
+  salon   Salon  @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  weekday   Int
+  isClosed  Boolean @default(false)
+  openTime  String?
+  closeTime String?
+
+  @@unique([salonId, weekday])
+}
+
+model BookingSettings {
+  id      String @id @default(cuid())
+  salonId String @unique
+  salon   Salon  @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  /// Hoeveel dagen vooruit een klant mag boeken.
+  maxAdvanceDays        Int     @default(60)
+  /// Hoe kort van tevoren nog geboekt mag worden.
+  minNoticeMinutes      Int     @default(120)
+  /// Minimale tijd tussen afspraken (buffer).
+  bufferMinutes         Int     @default(0)
+  allowEmployeeSelection Boolean @default(true)
+  allowNoPreference      Boolean @default(true)
+  allowCustomerCancel    Boolean @default(true)
+  cancelDeadlineHours    Int     @default(24)
+  requirePhone           Boolean @default(true)
+  requireEmail           Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
+}
+
+model EmailAutomationSettings {
+  id      String @id @default(cuid())
+  salonId String @unique
+  salon   Salon  @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  confirmationEnabled Boolean @default(true)
+  reminderEnabled     Boolean @default(true)
+  reminderHoursBefore Int     @default(24)
+  rescheduledEnabled  Boolean @default(true)
+  cancelledEnabled    Boolean @default(true)
+  reviewRequestEnabled Boolean @default(false)
+
+  updatedAt DateTime @updatedAt
+}

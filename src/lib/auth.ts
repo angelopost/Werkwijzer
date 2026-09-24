@@ -4,24 +4,6 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import type { Role } from "@/generated/prisma/enums";
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      role: Role;
-      name: string;
-      email: string;
-    };
-  }
-}
-
-declare module "@auth/core/jwt" {
-  interface JWT {
-    id: string;
-    role: Role;
-  }
-}
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: { strategy: "jwt" },
   pages: {

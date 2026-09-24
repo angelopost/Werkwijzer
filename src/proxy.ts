@@ -19,13 +19,13 @@ export default auth((req) => {
   }
 
   if (PUBLIC_PATHS.includes(pathname)) {
-    if (user) {
+    if (user?.role) {
       return NextResponse.redirect(new URL(homeFor(user.role), req.nextUrl));
     }
     return NextResponse.next();
   }
 
-  if (!user) {
+  if (!user?.role) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
 
@@ -44,5 +44,10 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|.*\\.(?:png|jpg|jpeg|svg|ico)$).*)"],
+  // STYLRS (/stylrs, /book) en zijn eigen auth-routes hebben een volledig
+  // losstaand inlogsysteem (zie src/lib/stylrs/auth.ts + (app)-route-layouts)
+  // en worden daarom hier uitgesloten van Werkwijzer's sessiecontrole.
+  matcher: [
+    "/((?!api|stylrs|book|_next/static|_next/image|.*\\.(?:png|jpg|jpeg|svg|ico)$).*)",
+  ],
 };
