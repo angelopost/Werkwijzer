@@ -65,13 +65,17 @@ export function TimeEntryList({
               {showEmployee && <p className="text-sm font-medium">{entry.employeeName}</p>}
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">{formatClockDayLabel(clockIn)}</span>
-                {clockOut ? (
-                  <span className="text-muted-foreground">
-                    {formatClockTime(clockIn)} - {formatClockTime(clockOut)}
-                  </span>
-                ) : (
-                  <Badge variant="secondary">Nog bezig</Badge>
-                )}
+                <span className="flex items-center gap-1.5 text-muted-foreground">
+                  {clockOut ? (
+                    <>
+                      {formatClockTime(clockIn)} - {formatClockTime(clockOut)}
+                    </>
+                  ) : (
+                    <>
+                      {formatClockTime(clockIn)} <Badge variant="secondary">Nog bezig</Badge>
+                    </>
+                  )}
+                </span>
               </div>
               <div className="flex items-center justify-between text-sm text-muted-foreground">
                 <span>Duur</span>
