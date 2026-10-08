@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import {
   addWorkshopAction,
   deleteWorkshopAction,
-  updateWorkshop,
+  updateWorkshopNotes,
   updateWorkshopStatus,
   type WorkshopActionState,
 } from "@/app/(admin)/workshops/actions";
@@ -220,44 +220,25 @@ function ActionsCard({ workshop, todayKey }: { workshop: WorkshopDetailData; tod
   );
 }
 
-function DetailsCard({ workshop }: { workshop: WorkshopDetailData }) {
+function NotesCard({ workshop }: { workshop: WorkshopDetailData }) {
   const [state, action, pending] = useActionState<WorkshopActionState, FormData>(
-    updateWorkshop.bind(null, workshop.id),
+    updateWorkshopNotes.bind(null, workshop.id),
     undefined
   );
 
   return (
     <section className="flex flex-col gap-4 rounded-2xl border bg-card p-4 shadow-xs">
-      <h3 className="text-sm font-semibold">Gegevens en bijzonderheden</h3>
+      <h3 className="text-sm font-semibold">Bijzonderheden</h3>
       <form action={action} className="flex flex-col gap-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="name">Naam</Label>
-            <Input id="name" name="name" required maxLength={200} defaultValue={workshop.name} />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="date">Datum</Label>
-            <Input
-              id="date"
-              name="date"
-              type="date"
-              required
-              className="block w-full max-w-full overflow-hidden"
-              defaultValue={workshop.dateKey}
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="notes">Bijzonderheden</Label>
-          <Textarea
-            id="notes"
-            name="notes"
-            placeholder="Bijvoorbeeld: kan alleen op maandag, of komt iets later"
-            maxLength={2000}
-            defaultValue={workshop.notes ?? ""}
-          />
-        </div>
+        <Textarea
+          id="notes"
+          name="notes"
+          aria-label="Bijzonderheden"
+          placeholder="Bijvoorbeeld: kan alleen op maandag, of komt iets later"
+          maxLength={2000}
+          className="min-h-28"
+          defaultValue={workshop.notes ?? ""}
+        />
 
         {state?.error && <p className="text-sm text-destructive">{state.error}</p>}
 
@@ -290,10 +271,7 @@ export function WorkshopDetail({
 
       <FollowUpCard workshop={workshop} />
       <ActionsCard workshop={workshop} todayKey={todayKey} />
-      <DetailsCard
-        key={`${workshop.name}|${workshop.dateKey}|${workshop.notes ?? ""}`}
-        workshop={workshop}
-      />
+      <NotesCard key={workshop.notes ?? ""} workshop={workshop} />
 
       <DeleteWorkshopButton workshopId={workshop.id} name={workshop.name} />
     </div>

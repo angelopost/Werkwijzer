@@ -7,8 +7,8 @@ import { parseDateKey } from "@/lib/dates";
 import {
   workshopActionSchema,
   workshopCreateSchema,
+  workshopNotesSchema,
   workshopStatusSchema,
-  workshopUpdateSchema,
 } from "@/lib/validation/workshop";
 
 export type WorkshopActionState = { error?: string; success?: boolean; id?: string } | undefined;
@@ -40,30 +40,23 @@ export async function createWorkshop(
   return { success: true, id: workshop.id };
 }
 
-export async function updateWorkshop(
+export async function updateWorkshopNotes(
   workshopId: string,
   _prevState: WorkshopActionState,
   formData: FormData
 ): Promise<WorkshopActionState> {
   await requireAdmin();
 
-  const parsed = workshopUpdateSchema.safeParse({
-    name: formData.get("name"),
-    date: formData.get("date"),
+  const parsed = workshopNotesSchema.safeParse({
     notes: formData.get("notes") || undefined,
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Ongeldige invoer" };
   }
-  const data = parsed.data;
 
   await prisma.workshop.update({
     where: { id: workshopId },
-    data: {
-      name: data.name,
-      date: parseDateKey(data.date),
-      notes: data.notes?.trim() || null,
-    },
+    data: { notes: parsed.data.notes?.trim() || null },
   });
 
   revalidateWorkshop(workshopId);

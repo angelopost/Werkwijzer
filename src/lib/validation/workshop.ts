@@ -5,9 +5,7 @@ export const workshopCreateSchema = z.object({
   date: z.string().min(1, { error: "Datum is verplicht" }),
 });
 
-export const workshopUpdateSchema = z.object({
-  name: z.string().trim().min(1, { error: "Naam is verplicht" }).max(200),
-  date: z.string().min(1, { error: "Datum is verplicht" }),
+export const workshopNotesSchema = z.object({
   notes: z.string().max(2000).optional(),
 });
 
