@@ -13,6 +13,7 @@ import { RoosterGrid } from "@/components/rooster/rooster-grid";
 import { WorkshopBanner } from "@/components/workshops/workshop-banner";
 import { Button } from "@/components/ui/button";
 import { WeekNav } from "@/components/layout/week-nav";
+import { CurrentWeekGuard } from "@/components/layout/current-week-guard";
 import { publishWeek } from "./actions";
 
 export default async function RoosterPage({
@@ -62,6 +63,12 @@ export default async function RoosterPage({
 
   return (
     <div className="flex flex-col gap-3">
+      <CurrentWeekGuard
+        basePath="/rooster"
+        weekKey={weekStartKey}
+        todayKey={toDateKey(today)}
+        explicitWeek={Boolean(params.week)}
+      />
       <WorkshopBanner workshops={workshops} today={today} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

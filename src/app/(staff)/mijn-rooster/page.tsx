@@ -3,6 +3,7 @@ import { getAmsterdamToday, getWeekDays, getWeekStart, parseDateKey, toDateKey }
 import { getStaffColorIndexes } from "@/lib/staff-colors";
 import { StaffWeekGrid } from "@/components/rooster/staff-week-grid";
 import { WeekNav } from "@/components/layout/week-nav";
+import { CurrentWeekGuard } from "@/components/layout/current-week-guard";
 
 export default async function MijnRoosterPage({
   searchParams,
@@ -32,6 +33,12 @@ export default async function MijnRoosterPage({
 
   return (
     <div className="flex flex-col gap-4">
+      <CurrentWeekGuard
+        basePath="/mijn-rooster"
+        weekKey={weekStartKey}
+        todayKey={toDateKey(getAmsterdamToday())}
+        explicitWeek={Boolean(params.week)}
+      />
       <WeekNav basePath="/mijn-rooster" weekStart={weekStart} />
 
       <StaffWeekGrid
