@@ -49,7 +49,7 @@ export async function fetchTodoBoardItems(params: {
     prisma.todo.findMany({
       where: { date: { gte: from, lte: to }, forStaff },
       include: { assignee: true, completedBy: true },
-      orderBy: [{ priority: "asc" }, { createdAt: "asc" }],
+      orderBy: [{ date: "asc" }, { priority: "asc" }, { createdAt: "asc" }],
     }),
     prisma.todo.findMany({
       where: { date: null, forStaff },

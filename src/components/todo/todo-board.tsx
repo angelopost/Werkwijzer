@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CircleCheckIcon, Plus, Repeat } from "lucide-react";
-import { formatDayLabel, getWeekdayFullLabel, isToday, parseDateKey } from "@/lib/dates";
+import { CalendarClock, CircleCheckIcon, ListTodo, Plus, Repeat } from "lucide-react";
+import { addUTCDays, formatDayLabel, parseDateKey, toDateKey } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,16 +20,62 @@ const PRIORITY_BADGE_VARIANT: Record<TodoPriority, "destructive" | "default" | "
   NIET_DRINGEND: "secondary",
 };
 
-/** Kaartjes naast elkaar die automatisch doorlopen naar een volgende regel, zodat er nooit
- * zijwaarts gescrold hoeft te worden. */
-const CARD_GRID = "grid gap-2 [grid-template-columns:repeat(auto-fill,minmax(15rem,1fr))]";
+/** Aantal to do's dat onder elkaar staat voordat de lijst een kolom naar rechts doorloopt. */
+const ROWS_PER_COLUMN = 3;
+
+/** Kolommen naast elkaar; passen er niet meer, dan loopt het door op een nieuwe regel eronder
+ * (zo hoeft er nooit zijwaarts gescrold te worden). */
+const COLUMN_GRID = "grid items-start gap-3 [grid-template-columns:repeat(auto-fill,minmax(16rem,1fr))]";
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const result: T[][] = [];
+  for (let i = 0; i < items.length; i += size) result.push(items.slice(i, i + size));
+  return result;
+}
+
+function dateLabel(dateKey: string, todayKey: string): { label: string; highlight: boolean } {
+  if (dateKey === todayKey) return { label: "Vandaag", highlight: true };
+  const tomorrowKey = toDateKey(addUTCDays(parseDateKey(todayKey), 1));
+  const formatted = formatDayLabel(parseDateKey(dateKey));
+  if (dateKey === tomorrowKey) return { label: `Morgen · ${formatted}`, highlight: false };
+  return { label: formatted, highlight: false };
+}
+
+function SectionTitle({
+  icon: Icon,
+  title,
+  subtitle,
+  action,
+}: {
+  icon: typeof CalendarClock;
+  title: string;
+  subtitle: string;
+  action: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <Icon className="size-5" strokeWidth={2} />
+        </span>
+        <div className="flex flex-col">
+          <h2 className="text-lg leading-tight font-semibold tracking-tight">{title}</h2>
+          <p className="text-xs text-muted-foreground">{subtitle}</p>
+        </div>
+      </div>
+      {action}
+    </div>
+  );
+}
 
 function TodoCard({
   todo,
+  dateChip,
   onClick,
   onToggle,
 }: {
   todo: TodoItem;
+  dateChip?: { label: string; highlight: boolean };
   onClick: () => void;
   onToggle: () => void;
 }) {
@@ -44,6 +91,16 @@ function TodoCard({
         className="mt-0.5"
       />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
+        {dateChip && (
+          <span
+            className={cn(
+              "text-[11px] leading-none font-semibold tracking-wide uppercase",
+              dateChip.highlight ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            {dateChip.label}
+          </span>
+        )}
         <p
           className={cn(
             "flex items-center gap-1 text-sm font-medium break-words",
@@ -76,34 +133,31 @@ function TodoCard({
 }
 
 export function TodoBoard({
-  days: dayKeys,
   todos,
   staff,
   forStaff = false,
+  todayKey,
+  basePath,
+  weeks,
+  moreWeeks,
 }: {
-  days: string[];
   todos: TodoItem[];
   staff: TodoStaffOption[];
   forStaff?: boolean;
+  todayKey: string;
+  basePath: string;
+  weeks: number;
+  moreWeeks: number;
 }) {
-  const days = dayKeys.map(parseDateKey);
-
   const [selection, setSelection] = useState<{ dateKey: string | null; todo: TodoItem | null } | null>(
     null
   );
   const router = useRouter();
 
-  const todosByDay = new Map<string, TodoItem[]>();
-  const generalTodos: TodoItem[] = [];
-  for (const todo of todos) {
-    if (todo.date === null) {
-      generalTodos.push(todo);
-      continue;
-    }
-    const list = todosByDay.get(todo.date) ?? [];
-    list.push(todo);
-    todosByDay.set(todo.date, list);
-  }
+  // De query levert al op datum (oudste eerst), dan prioriteit; hier alleen splitsen.
+  const datedTodos = todos.filter((todo) => todo.date !== null);
+  const generalTodos = todos.filter((todo) => todo.date === null);
+  const datedColumns = chunk(datedTodos, ROWS_PER_COLUMN);
 
   async function handleToggle(id: string) {
     await toggleTodoCompleted(id);
@@ -111,103 +165,91 @@ export function TodoBoard({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Weekplanning: elke dag is één rij met links de datum en rechts de to do's. */}
-      <section className="flex flex-col overflow-hidden rounded-xl border bg-card">
-        {days.map((day, index) => {
-          const dateKey = dayKeys[index];
-          const dayTodos = todosByDay.get(dateKey) ?? [];
-          const today = isToday(day);
-          const doneCount = dayTodos.filter((t) => t.completed).length;
-          return (
-            <div
-              key={dateKey}
-              className={cn(
-                "flex flex-col gap-3 border-b p-3 last:border-b-0 sm:flex-row sm:items-start sm:gap-4",
-                today && "bg-primary/5"
-              )}
-            >
-              <div className="flex shrink-0 items-center gap-3 sm:w-44">
-                <div
-                  className={cn(
-                    "flex size-11 shrink-0 flex-col items-center justify-center rounded-xl",
-                    today ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"
-                  )}
-                >
-                  <span className="text-[10px] leading-none font-semibold uppercase">
-                    {formatDayLabel(day).split(" ")[0]}
-                  </span>
-                  <span className="text-lg leading-tight font-bold">{day.getUTCDate()}</span>
-                </div>
-                <div className="flex min-w-0 flex-col">
-                  <span className="text-sm font-semibold">
-                    {today ? "Vandaag" : getWeekdayFullLabel(day)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {dayTodos.length === 0
-                      ? "Geen to do's"
-                      : `${doneCount} van ${dayTodos.length} klaar`}
-                  </span>
-                </div>
-              </div>
+    <div className="flex flex-col gap-8">
+      <section className="flex flex-col gap-4">
+        <SectionTitle
+          icon={CalendarClock}
+          title="To do's met datum"
+          subtitle="Op volgorde van datum: de eerstvolgende staat bovenaan."
+          action={
+            <Button type="button" onClick={() => setSelection({ dateKey: todayKey, todo: null })}>
+              <Plus data-icon="inline-start" />
+              To do met datum toevoegen
+            </Button>
+          }
+        />
 
-              <div className="min-w-0 flex-1">
-                <div className={CARD_GRID}>
-                  {dayTodos.map((todo) => (
-                    <TodoCard
-                      key={todo.id}
-                      todo={todo}
-                      onClick={() => setSelection({ dateKey, todo })}
-                      onToggle={() => handleToggle(todo.id)}
-                    />
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => setSelection({ dateKey, todo: null })}
-                    className={cn(
-                      "flex items-center justify-center gap-1.5 rounded-lg border border-dashed text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary",
-                      dayTodos.length === 0 ? "min-h-10" : "min-h-14"
-                    )}
-                  >
-                    <Plus className="size-4" strokeWidth={2} />
-                    To do toevoegen
-                  </button>
-                </div>
+        {datedColumns.length === 0 ? (
+          <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
+            Geen to do&apos;s met datum in de komende {weeks} weken.
+          </div>
+        ) : (
+          <div className={COLUMN_GRID}>
+            {datedColumns.map((column, columnIndex) => (
+              <div key={columnIndex} className="flex flex-col gap-2">
+                {column.map((todo) => (
+                  <TodoCard
+                    key={todo.id}
+                    todo={todo}
+                    dateChip={dateLabel(todo.date!, todayKey)}
+                    onClick={() => setSelection({ dateKey: todo.date, todo })}
+                    onToggle={() => handleToggle(todo.id)}
+                  />
+                ))}
               </div>
-            </div>
-          );
-        })}
+            ))}
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground">
+          Je ziet de komende {weeks} weken.{" "}
+          <Link href={`${basePath}?weken=${moreWeeks}`} className="font-medium text-primary hover:underline">
+            Toon verder vooruit
+          </Link>
+          {weeks > 2 && (
+            <>
+              {" · "}
+              <Link href={basePath} className="font-medium text-primary hover:underline">
+                Terug naar 2 weken
+              </Link>
+            </>
+          )}
+        </p>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-col">
-            <h2 className="text-sm font-semibold">Algemene to do&apos;s</h2>
-            <p className="text-xs text-muted-foreground">
-              Zonder vaste datum — kan gedaan worden wanneer het uitkomt.
-            </p>
+      <section className="flex flex-col gap-4">
+        <SectionTitle
+          icon={ListTodo}
+          title="Algemene to do's"
+          subtitle="Zonder vaste datum — kan gedaan worden wanneer het uitkomt."
+          action={
+            <Button type="button" onClick={() => setSelection({ dateKey: null, todo: null })}>
+              <Plus data-icon="inline-start" />
+              Algemene to do toevoegen
+            </Button>
+          }
+        />
+
+        {generalTodos.length === 0 ? (
+          <div className="rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
+            Geen algemene to do&apos;s
           </div>
-          <Button type="button" size="sm" onClick={() => setSelection({ dateKey: null, todo: null })}>
-            <Plus data-icon="inline-start" />
-            Algemene to do toevoegen
-          </Button>
-        </div>
-        <div className="rounded-xl border bg-card p-2.5">
-          {generalTodos.length === 0 ? (
-            <p className="p-1 text-xs text-muted-foreground">Geen algemene to do&apos;s</p>
-          ) : (
-            <div className={CARD_GRID}>
-              {generalTodos.map((todo) => (
-                <TodoCard
-                  key={todo.id}
-                  todo={todo}
-                  onClick={() => setSelection({ dateKey: null, todo })}
-                  onToggle={() => handleToggle(todo.id)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className={COLUMN_GRID}>
+            {chunk(generalTodos, ROWS_PER_COLUMN).map((column, columnIndex) => (
+              <div key={columnIndex} className="flex flex-col gap-2">
+                {column.map((todo) => (
+                  <TodoCard
+                    key={todo.id}
+                    todo={todo}
+                    onClick={() => setSelection({ dateKey: null, todo })}
+                    onToggle={() => handleToggle(todo.id)}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {selection && (
