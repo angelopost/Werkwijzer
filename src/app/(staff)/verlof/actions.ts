@@ -40,6 +40,7 @@ export async function requestLeave(_prevState: LeaveActionState, formData: FormD
 
   revalidatePath("/verlof");
   revalidatePath("/goedkeuringen");
+  revalidatePath("/uren");
   revalidatePath("/rooster");
   revalidatePath("/mijn-rooster");
   return { success: true };
@@ -52,4 +53,5 @@ export async function cancelLeave(leaveId: string) {
   });
   revalidatePath("/verlof");
   revalidatePath("/goedkeuringen");
+  revalidatePath("/uren");
 }

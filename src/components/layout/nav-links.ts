@@ -13,7 +13,6 @@ export type NavLink = { href: string; label: string; icon: IconKey };
 export const ADMIN_NAV: NavLink[] = [
   { href: "/rooster", label: "Rooster", icon: "calendar" },
   { href: "/inklokken", label: "Inklokken", icon: "timer" },
-  { href: "/goedkeuringen", label: "Goedkeuringen", icon: "check" },
   { href: "/medewerkers", label: "Medewerkers", icon: "users" },
   { href: "/uren", label: "Uren", icon: "clock" },
   { href: "/todo", label: "To do", icon: "todo" },

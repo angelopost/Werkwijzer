@@ -34,5 +34,6 @@ export async function submitTimeEntry(entryId: string) {
   const result = await submitTimeEntryLib(user.id, entryId);
   revalidatePath("/mijn-inklok");
   revalidatePath("/goedkeuringen");
+  revalidatePath("/uren");
   return result;
 }

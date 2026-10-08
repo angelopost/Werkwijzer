@@ -8,6 +8,7 @@ import { approveTimeEntry, rejectTimeEntry } from "@/lib/time-entries";
 /** Alleen de schermen verversen die een verlof-/ziekteperiode kunnen tonen. */
 function revalidateLeavePaths() {
   revalidatePath("/goedkeuringen");
+  revalidatePath("/uren");
   revalidatePath("/rooster");
   revalidatePath("/mijn-rooster");
   revalidatePath("/verlof");

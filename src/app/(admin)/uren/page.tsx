@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { addUTCDays, formatDayLabel, getAmsterdamToday, getWeekStart, parseDateKey } from "@/lib/dates";
 import { formatDuration, hasShiftEnded, shiftHours } from "@/lib/hours";
 import { UrenFilters } from "@/components/uren/uren-filters";
+import { GoedkeuringenSection } from "@/components/goedkeuringen/goedkeuringen-section";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import {
   Table,
@@ -52,6 +53,9 @@ export default async function UrenPage({
 
   return (
     <div className="flex flex-col gap-4">
+      <GoedkeuringenSection />
+
+      <h2 className="mt-4 text-base font-semibold">Gewerkte uren</h2>
       <UrenFilters staff={staff.map((s) => ({ id: s.id, name: s.name }))} />
 
       <p className="text-sm text-muted-foreground">
