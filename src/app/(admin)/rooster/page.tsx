@@ -1,7 +1,15 @@
 import { prisma } from "@/lib/db";
-import { getAmsterdamToday, getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
+import {
+  addUTCDays,
+  getAmsterdamToday,
+  getWeekDays,
+  getWeekStart,
+  parseDateKey,
+  toDateKey,
+} from "@/lib/dates";
 import { materializePermanentShiftsForWeek } from "@/lib/permanent-shifts";
 import { RoosterGrid } from "@/components/rooster/rooster-grid";
+import { WorkshopBanner } from "@/components/workshops/workshop-banner";
 import { Button } from "@/components/ui/button";
 import { WeekNav } from "@/components/layout/week-nav";
 import { publishWeek } from "./actions";
@@ -20,7 +28,16 @@ export default async function RoosterPage({
 
   await materializePermanentShiftsForWeek(weekStart);
 
-  const [staff, shifts, leaveRequests] = await Promise.all([
+  // Workshops van de getoonde week, plus altijd vandaag en morgen als je de huidige week bekijkt
+  // (zodat een workshop van maandag al zichtbaar is op zondag).
+  const today = getAmsterdamToday();
+  const weekContainsToday = today >= from && today <= to;
+  const workshopDateFilters = [
+    { date: { gte: from, lte: to } },
+    ...(weekContainsToday ? [{ date: { gte: today, lte: addUTCDays(today, 1) } }] : []),
+  ];
+
+  const [staff, shifts, leaveRequests, workshops] = await Promise.all([
     prisma.user.findMany({
       where: { role: "STAFF", isActive: true },
       orderBy: [{ contractType: { sort: "desc", nulls: "last" } }, { name: "asc" }],
@@ -32,12 +49,19 @@ export default async function RoosterPage({
     prisma.leaveRequest.findMany({
       where: { status: "APPROVED", startDate: { lte: to }, endDate: { gte: from } },
     }),
+    prisma.workshop.findMany({
+      where: { OR: workshopDateFilters },
+      select: { id: true, name: true, date: true },
+      orderBy: [{ date: "asc" }, { createdAt: "asc" }],
+    }),
   ]);
 
   const hasDraft = shifts.some((s) => s.status === "DRAFT");
 
   return (
     <div className="flex flex-col gap-4">
+      <WorkshopBanner workshops={workshops} today={today} />
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <WeekNav basePath="/rooster" weekStart={weekStart} />
         <form action={publishWeek.bind(null, weekStartKey)}>
