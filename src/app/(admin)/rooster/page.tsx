@@ -47,7 +47,6 @@ export default async function RoosterPage({
     }),
     prisma.shift.findMany({
       where: { date: { gte: from, lte: to } },
-      include: { assignedUser: true },
     }),
     prisma.leaveRequest.findMany({
       where: { status: "APPROVED", startDate: { lte: to }, endDate: { gte: from } },

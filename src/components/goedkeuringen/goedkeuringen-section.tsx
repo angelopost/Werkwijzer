@@ -17,12 +17,12 @@ export async function GoedkeuringenSection() {
   const [leaveRequests, pendingTimeEntries] = await Promise.all([
     prisma.leaveRequest.findMany({
       where: { status: "PENDING", type: "VERLOF" },
-      include: { user: true },
+      include: { user: { select: { name: true } } },
       orderBy: { createdAt: "asc" },
     }),
     prisma.timeEntry.findMany({
       where: { status: "PENDING" },
-      include: { user: true },
+      include: { user: { select: { name: true } } },
       orderBy: { submittedAt: "asc" },
     }),
   ]);

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
+
+// Alleen de lichte configuratie (zonder database), zodat de proxy snel opstart.
+const { auth } = NextAuth(authConfig);
 
 const ADMIN_PREFIXES = ["/rooster", "/medewerkers", "/goedkeuringen", "/uren", "/inklokken", "/todo", "/todo-medewerkers", "/workshops"];
 const STAFF_PREFIXES = ["/mijn-rooster", "/verlof", "/mijn-inklok", "/mijn-uren", "/mijn-to-do"];

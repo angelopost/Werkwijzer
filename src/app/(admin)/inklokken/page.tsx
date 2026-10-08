@@ -21,10 +21,15 @@ export default async function InklokkenPage({
 }) {
   const params = await searchParams;
 
-  const staff = await prisma.user.findMany({
+  // De medewerkers worden alvast opgevraagd terwijl de rest van de filters wordt uitgerekend.
+  const staffPromise = prisma.user.findMany({
     where: { role: "STAFF", isActive: true },
     orderBy: { name: "asc" },
-    include: { timeEntries: { where: { clockOut: null }, take: 1 } },
+    select: {
+      id: true,
+      name: true,
+      timeEntries: { where: { clockOut: null }, take: 1, select: { clockIn: true } },
+    },
   });
 
   const thisWeekStart = getWeekStart(getAmsterdamToday());
@@ -52,12 +57,15 @@ export default async function InklokkenPage({
     if (params.to) entryWhere.clockIn.lt = getAmsterdamDayRangeUtc(params.to).end;
   }
 
-  const recentEntries = await prisma.timeEntry.findMany({
-    where: entryWhere,
-    orderBy: { clockIn: "desc" },
-    take: 500,
-    include: { user: true },
-  });
+  const [staff, recentEntries] = await Promise.all([
+    staffPromise,
+    prisma.timeEntry.findMany({
+      where: entryWhere,
+      orderBy: { clockIn: "desc" },
+      take: 500,
+      include: { user: { select: { name: true } } },
+    }),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">

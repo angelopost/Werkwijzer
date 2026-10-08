@@ -37,22 +37,24 @@ export async function materializePermanentShifts(rangeStart: Date, rangeEnd: Dat
   });
   if (templates.length === 0) return;
 
-  const existing = await prisma.shift.findMany({
-    where: {
-      date: { gte: rangeStart, lte: rangeEnd },
-      assignedUserId: { in: [...new Set(templates.map((t) => t.userId))] },
-    },
-    select: { assignedUserId: true, date: true },
-  });
+  // Twee onafhankelijke queries tegelijk uitvoeren scheelt een heen-en-weer naar de database.
+  const [existing, exceptions] = await Promise.all([
+    prisma.shift.findMany({
+      where: {
+        date: { gte: rangeStart, lte: rangeEnd },
+        assignedUserId: { in: [...new Set(templates.map((t) => t.userId))] },
+      },
+      select: { assignedUserId: true, date: true },
+    }),
+    prisma.permanentShiftException.findMany({
+      where: {
+        permanentShiftId: { in: templates.map((t) => t.id) },
+        date: { gte: rangeStart, lte: rangeEnd },
+      },
+      select: { permanentShiftId: true, date: true },
+    }),
+  ]);
   const existingKeys = new Set(existing.map((s) => `${s.assignedUserId}_${toDateKey(s.date)}`));
-
-  const exceptions = await prisma.permanentShiftException.findMany({
-    where: {
-      permanentShiftId: { in: templates.map((t) => t.id) },
-      date: { gte: rangeStart, lte: rangeEnd },
-    },
-    select: { permanentShiftId: true, date: true },
-  });
   const excludedKeys = new Set(exceptions.map((e) => `${e.permanentShiftId}_${toDateKey(e.date)}`));
 
   const toCreate: ShiftCreateInput[] = [];

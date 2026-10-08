@@ -40,16 +40,18 @@ export async function materializePermanentTodos(rangeStart: Date, rangeEnd: Date
 
   const templateIds = templates.map((t) => t.id);
 
-  const existing = await prisma.todo.findMany({
-    where: { permanentTodoId: { in: templateIds }, date: { gte: rangeStart, lte: rangeEnd } },
-    select: { permanentTodoId: true, date: true },
-  });
+  // Twee onafhankelijke queries tegelijk uitvoeren scheelt een heen-en-weer naar de database.
+  const [existing, exceptions] = await Promise.all([
+    prisma.todo.findMany({
+      where: { permanentTodoId: { in: templateIds }, date: { gte: rangeStart, lte: rangeEnd } },
+      select: { permanentTodoId: true, date: true },
+    }),
+    prisma.permanentTodoException.findMany({
+      where: { permanentTodoId: { in: templateIds }, date: { gte: rangeStart, lte: rangeEnd } },
+      select: { permanentTodoId: true, date: true },
+    }),
+  ]);
   const existingKeys = new Set(existing.map((t) => `${t.permanentTodoId}_${toDateKey(t.date!)}`));
-
-  const exceptions = await prisma.permanentTodoException.findMany({
-    where: { permanentTodoId: { in: templateIds }, date: { gte: rangeStart, lte: rangeEnd } },
-    select: { permanentTodoId: true, date: true },
-  });
   const excludedKeys = new Set(exceptions.map((e) => `${e.permanentTodoId}_${toDateKey(e.date)}`));
 
   const toCreate: TodoCreateInput[] = [];
