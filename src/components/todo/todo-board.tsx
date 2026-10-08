@@ -124,7 +124,13 @@ export function TodoBoard({
           const dayTodos = todosByDay.get(dateKey) ?? [];
           const label = isToday(day) ? "Vandaag" : formatDayLabel(day);
           return (
-            <div key={dateKey} className="flex w-64 shrink-0 flex-col rounded-xl border bg-card">
+            <div
+              key={dateKey}
+              className={cn(
+                "flex min-w-64 flex-1 flex-col rounded-xl border bg-card",
+                days.length === 1 && "max-w-md"
+              )}
+            >
               <div className="border-b p-3">
                 <span className="text-sm font-semibold">{label}</span>
               </div>

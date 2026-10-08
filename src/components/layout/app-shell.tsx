@@ -18,8 +18,8 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-svh bg-background p-3 sm:p-4">
-      <div className="mx-auto flex h-[calc(100svh-1.5rem)] max-w-[1600px] overflow-hidden rounded-2xl border shadow-sm sm:h-[calc(100svh-2rem)]">
+    <div className="h-svh bg-background">
+      <div className="flex h-full overflow-hidden">
         <Sidebar links={links} userName={userName} roleLabel={roleLabel} />
         <div className="flex min-w-0 flex-1 flex-col bg-card md:border-l">
           <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 sm:px-6">

@@ -324,8 +324,8 @@ export function WorkshopDetail({
   todayKey: string;
 }) {
   return (
-    <div className="flex max-w-3xl flex-col gap-4">
-      <div className="flex flex-col gap-1">
+    <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+      <div className="flex flex-col gap-1 lg:col-span-2">
         <h2 className="text-2xl font-bold tracking-tight">{workshop.name}</h2>
         <p className="text-sm text-muted-foreground">
           {workshop.dateLabel}
@@ -334,11 +334,19 @@ export function WorkshopDetail({
         </p>
       </div>
 
-      <FollowUpCard workshop={workshop} />
-      <ActionsCard workshop={workshop} todayKey={todayKey} />
-      <NotesCard key={workshop.notes ?? ""} workshop={workshop} />
-
-      <DeleteWorkshopButton workshopId={workshop.id} name={workshop.name} />
+      {/* Op brede schermen: opvolging links, acties en reacties rechts. */}
+      <div className="lg:col-start-1">
+        <FollowUpCard workshop={workshop} />
+      </div>
+      <div className="lg:col-start-2 lg:row-span-3 lg:row-start-2">
+        <ActionsCard workshop={workshop} todayKey={todayKey} />
+      </div>
+      <div className="lg:col-start-1">
+        <NotesCard key={workshop.notes ?? ""} workshop={workshop} />
+      </div>
+      <div className="lg:col-start-1">
+        <DeleteWorkshopButton workshopId={workshop.id} name={workshop.name} />
+      </div>
     </div>
   );
 }

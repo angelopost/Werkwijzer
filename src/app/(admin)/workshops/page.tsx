@@ -19,7 +19,7 @@ type WorkshopRow = {
 
 function WorkshopList({ rows }: { rows: WorkshopRow[] }) {
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="grid gap-2.5 lg:grid-cols-2 2xl:grid-cols-3">
       {rows.map((workshop) => (
         <Link
           key={workshop.id}
@@ -88,7 +88,7 @@ export default async function WorkshopsPage() {
   const past = workshops.filter((w) => w.date < today).reverse();
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <WorkshopAddDialog />
 
       {workshops.length === 0 && (

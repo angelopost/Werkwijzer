@@ -127,4 +127,22 @@
   html {
     @apply font-sans;
   }
+
+  /* Alles in de app is in rem opgebouwd; op grote schermen schalen we daarom het hele
+   * programma mee, zodat het niet klein in het midden van een groot scherm staat. */
+  @media (min-width: 1800px) {
+    html {
+      font-size: 112.5%;
+    }
+  }
+  @media (min-width: 2300px) {
+    html {
+      font-size: 131.25%;
+    }
+  }
+  @media (min-width: 3000px) {
+    html {
+      font-size: 156.25%;
+    }
+  }
 }
