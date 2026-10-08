@@ -16,7 +16,6 @@ export const ADMIN_NAV: NavLink[] = [
   { href: "/medewerkers", label: "Medewerkers", icon: "users" },
   { href: "/uren", label: "Uren", icon: "clock" },
   { href: "/todo", label: "To do", icon: "todo" },
-  { href: "/todo-medewerkers", label: "To do medewerkers", icon: "todo" },
   { href: "/workshops", label: "Workshops", icon: "workshop" },
 ];
 

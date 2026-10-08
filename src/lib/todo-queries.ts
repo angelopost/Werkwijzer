@@ -34,14 +34,16 @@ async function processExpiredStaffGeneralTodos() {
 
 /** Haalt de to do's op voor een weekbereik (of enkele dag) plus alle algemene
  * to do's zonder datum, die ongeacht het geselecteerde bereik altijd meetellen. */
+/** forStaff: true = alleen to do's voor medewerkers, false = alleen beheerders-to do's,
+ * weggelaten = beide (de gezamenlijke beheerderspagina). */
 export async function fetchTodoBoardItems(params: {
   from: Date;
   to: Date;
-  forStaff: boolean;
+  forStaff?: boolean;
 }): Promise<TodoItem[]> {
   const { from, to, forStaff } = params;
 
-  if (forStaff) {
+  if (forStaff !== false) {
     await processExpiredStaffGeneralTodos();
   }
 
@@ -71,5 +73,6 @@ export async function fetchTodoBoardItems(params: {
     completedByName: t.completedBy?.name ?? null,
     permanentTodoId: t.permanentTodoId,
     permanentGeneral: t.permanentGeneral,
+    forStaff: t.forStaff,
   }));
 }

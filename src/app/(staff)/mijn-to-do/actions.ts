@@ -27,5 +27,5 @@ export async function markTodoCompletedBy(todoId: string, completedById: string 
   });
 
   revalidatePath("/mijn-to-do");
-  revalidatePath("/todo-medewerkers");
+  revalidatePath("/todo");
 }

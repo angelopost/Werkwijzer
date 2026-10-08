@@ -24,7 +24,7 @@ export default async function TodoPage({
   await materializePermanentTodos(from, to);
 
   const [todos, staff] = await Promise.all([
-    fetchTodoBoardItems({ from, to, forStaff: false }),
+    fetchTodoBoardItems({ from, to }),
     prisma.user.findMany({
       where: { role: "STAFF", isActive: true },
       orderBy: { name: "asc" },

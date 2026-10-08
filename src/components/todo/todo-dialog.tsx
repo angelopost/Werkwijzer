@@ -36,19 +36,19 @@ export function TodoDialog({
   dateKey,
   todo,
   staff,
-  forStaff = false,
+  defaultForStaff = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   dateKey: string | null;
   todo: TodoItem | null;
   staff: TodoStaffOption[];
-  forStaff?: boolean;
+  /** Zichtbaarheid die voorgeselecteerd staat bij een nieuwe to do. */
+  defaultForStaff?: boolean;
 }) {
-  const boundAction = todo
-    ? updateTodo.bind(null, todo.id, forStaff)
-    : createTodo.bind(null, forStaff);
+  const boundAction = todo ? updateTodo.bind(null, todo.id) : createTodo;
   const [state, action, pending] = useActionState<TodoActionState, FormData>(boundAction, undefined);
+  const [forStaff, setForStaff] = useState(todo ? todo.forStaff : defaultForStaff);
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [bulkDeleteChecked, setBulkDeleteChecked] = useState(false);
   const [bulkDeletePending, setBulkDeletePending] = useState(false);
@@ -155,6 +155,33 @@ export function TodoDialog({
               />
             </div>
           )}
+
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="visibility">Zichtbaar voor</Label>
+            {todo?.permanentTodoId ? (
+              <p className="rounded-lg border bg-muted/40 p-3 text-sm text-muted-foreground">
+                {forStaff ? "Ook voor medewerkers" : "Alleen beheerders"} (vast patroon)
+              </p>
+            ) : (
+              <Select
+                name="visibility"
+                value={forStaff ? "medewerkers" : "beheerders"}
+                onValueChange={(value) => setForStaff(value === "medewerkers")}
+              >
+                <SelectTrigger id="visibility" className="w-full">
+                  <SelectValue>
+                    {(value: string | null) =>
+                      value === "medewerkers" ? "Ook voor medewerkers" : "Alleen beheerders"
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beheerders">Alleen beheerders</SelectItem>
+                  <SelectItem value="medewerkers">Ook voor medewerkers</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          </div>
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="assigneeId">Medewerker</Label>

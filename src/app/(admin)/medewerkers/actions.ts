@@ -76,7 +76,6 @@ export async function updateStaffName(userId: string, name: string) {
   revalidatePath("/mijn-rooster");
   revalidatePath("/uren");
   revalidatePath("/goedkeuringen");
-  revalidatePath("/uren");
   return { success: true };
 }
 
@@ -89,7 +88,6 @@ export async function deleteStaffMember(userId: string) {
   revalidatePath("/mijn-rooster");
   revalidatePath("/uren");
   revalidatePath("/goedkeuringen");
-  revalidatePath("/uren");
 }
 
 export async function regenerateInvite(userId: string): Promise<StaffActionState> {

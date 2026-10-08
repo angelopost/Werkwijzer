@@ -19,6 +19,28 @@ const PRIORITY_BADGE_VARIANT: Record<TodoPriority, "destructive" | "default" | "
   NIET_DRINGEND: "secondary",
 };
 
+type VisibilityFilter = "alle" | "beheerders" | "medewerkers";
+
+const FILTER_OPTIONS: { value: VisibilityFilter; label: string }[] = [
+  { value: "alle", label: "Alles" },
+  { value: "beheerders", label: "Alleen beheerders" },
+  { value: "medewerkers", label: "Voor medewerkers" },
+];
+
+/** Kleine label op elke kaart, zodat in één oogopslag te zien is voor wie de to do is. */
+function VisibilityChip({ forStaff }: { forStaff: boolean }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex w-fit items-center rounded px-1.5 py-px text-[10px] leading-4 font-medium whitespace-nowrap",
+        forStaff ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+      )}
+    >
+      {forStaff ? "Medewerkers" : "Beheerders"}
+    </span>
+  );
+}
+
 function TodoCard({
   todo,
   onClick,
@@ -53,6 +75,7 @@ function TodoCard({
         </p>
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant={PRIORITY_BADGE_VARIANT[todo.priority]}>{PRIORITY_LABEL[todo.priority]}</Badge>
+          <VisibilityChip forStaff={todo.forStaff} />
           {todo.assigneeName && (
             <span className="flex items-center gap-1 text-xs text-muted-foreground">
               <UserAvatar name={todo.assigneeName} className="size-4 text-[9px]" />
@@ -71,30 +94,78 @@ function TodoCard({
   );
 }
 
+function GeneralList({
+  title,
+  todos,
+  emptyLabel,
+  onAdd,
+  onSelect,
+  onToggle,
+}: {
+  title: string;
+  todos: TodoItem[];
+  emptyLabel: string;
+  onAdd: () => void;
+  onSelect: (todo: TodoItem) => void;
+  onToggle: (id: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="text-sm font-semibold">{title}</h3>
+        <Button type="button" size="sm" onClick={onAdd}>
+          <Plus data-icon="inline-start" />
+          Toevoegen
+        </Button>
+      </div>
+      <div className="flex flex-col gap-2 rounded-xl border bg-card p-2.5">
+        {todos.map((todo) => (
+          <TodoCard
+            key={todo.id}
+            todo={todo}
+            onClick={() => onSelect(todo)}
+            onToggle={() => onToggle(todo.id)}
+          />
+        ))}
+        {todos.length === 0 && <p className="p-1 text-xs text-muted-foreground">{emptyLabel}</p>}
+      </div>
+    </div>
+  );
+}
+
 export function TodoBoard({
   days: dayKeys,
   todos,
   staff,
-  forStaff = false,
 }: {
   days: string[];
   todos: TodoItem[];
   staff: TodoStaffOption[];
-  forStaff?: boolean;
 }) {
   const days = dayKeys.map(parseDateKey);
   const defaultDateKey = dayKeys[0];
 
-  const [selection, setSelection] = useState<{ dateKey: string | null; todo: TodoItem | null } | null>(
-    null
-  );
+  const [selection, setSelection] = useState<{
+    dateKey: string | null;
+    todo: TodoItem | null;
+    forStaff: boolean;
+  } | null>(null);
+  const [filter, setFilter] = useState<VisibilityFilter>("alle");
   const router = useRouter();
 
+  const visibleTodos = todos.filter(
+    (todo) =>
+      filter === "alle" ||
+      (filter === "medewerkers" && todo.forStaff) ||
+      (filter === "beheerders" && !todo.forStaff)
+  );
+
   const todosByDay = new Map<string, TodoItem[]>();
-  const generalTodos: TodoItem[] = [];
-  for (const todo of todos) {
+  const generalAdminTodos: TodoItem[] = [];
+  const generalStaffTodos: TodoItem[] = [];
+  for (const todo of visibleTodos) {
     if (todo.date === null) {
-      generalTodos.push(todo);
+      (todo.forStaff ? generalStaffTodos : generalAdminTodos).push(todo);
       continue;
     }
     const list = todosByDay.get(todo.date) ?? [];
@@ -107,30 +178,61 @@ export function TodoBoard({
     router.refresh();
   }
 
+  const showAdminGeneral = filter !== "medewerkers";
+  const showStaffGeneral = filter !== "beheerders";
+
   return (
     <div className="flex flex-col gap-4">
-      <Button
-        type="button"
-        onClick={() => setSelection({ dateKey: defaultDateKey, todo: null })}
-        className="self-start"
-      >
-        <Plus data-icon="inline-start" />
-        To do toevoegen
-      </Button>
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          type="button"
+          onClick={() => setSelection({ dateKey: defaultDateKey, todo: null, forStaff: false })}
+        >
+          <Plus data-icon="inline-start" />
+          To do toevoegen
+        </Button>
 
-      <div className="flex gap-4 overflow-x-auto pb-2">
+        <div
+          role="radiogroup"
+          aria-label="Zichtbaarheid"
+          className="inline-flex items-center gap-1 rounded-lg border bg-card p-1"
+        >
+          {FILTER_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="radio"
+              aria-checked={filter === option.value}
+              onClick={() => setFilter(option.value)}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                filter === option.value
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Alle dagen passen naast/onder elkaar zonder zijwaarts scrollen: 7 kolommen op een
+          breed scherm, 4 op een laptop, 2 op een tablet en 1 op een telefoon. */}
+      <div
+        className={cn(
+          "grid gap-3",
+          days.length === 1
+            ? "max-w-xl"
+            : "sm:grid-cols-2 lg:grid-cols-4 min-[103rem]:grid-cols-7"
+        )}
+      >
         {days.map((day, index) => {
           const dateKey = dayKeys[index];
           const dayTodos = todosByDay.get(dateKey) ?? [];
           const label = isToday(day) ? "Vandaag" : formatDayLabel(day);
           return (
-            <div
-              key={dateKey}
-              className={cn(
-                "flex min-w-64 flex-1 flex-col rounded-xl border bg-card",
-                days.length === 1 && "max-w-md"
-              )}
-            >
+            <div key={dateKey} className="flex min-w-0 flex-col rounded-xl border bg-card">
               <div className="border-b p-3">
                 <span className="text-sm font-semibold">{label}</span>
               </div>
@@ -139,7 +241,7 @@ export function TodoBoard({
                   <TodoCard
                     key={todo.id}
                     todo={todo}
-                    onClick={() => setSelection({ dateKey, todo })}
+                    onClick={() => setSelection({ dateKey, todo, forStaff: todo.forStaff })}
                     onToggle={() => handleToggle(todo.id)}
                   />
                 ))}
@@ -150,31 +252,30 @@ export function TodoBoard({
       </div>
 
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold">Algemene to do&apos;s</h2>
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => setSelection({ dateKey: null, todo: null })}
-          >
-            <Plus data-icon="inline-start" />
-            Algemene to do toevoegen
-          </Button>
-        </div>
+        <h2 className="text-sm font-semibold">Algemene to do&apos;s</h2>
         <p className="text-xs text-muted-foreground">
           Zonder vaste datum — kan gedaan worden wanneer het uitkomt.
         </p>
-        <div className="flex flex-col gap-2 rounded-xl border bg-card p-2.5">
-          {generalTodos.map((todo) => (
-            <TodoCard
-              key={todo.id}
-              todo={todo}
-              onClick={() => setSelection({ dateKey: null, todo })}
-              onToggle={() => handleToggle(todo.id)}
+        <div className={cn("grid gap-4", showAdminGeneral && showStaffGeneral && "lg:grid-cols-2")}>
+          {showAdminGeneral && (
+            <GeneralList
+              title="Alleen beheerders"
+              todos={generalAdminTodos}
+              emptyLabel="Geen algemene to do's"
+              onAdd={() => setSelection({ dateKey: null, todo: null, forStaff: false })}
+              onSelect={(todo) => setSelection({ dateKey: null, todo, forStaff: false })}
+              onToggle={handleToggle}
             />
-          ))}
-          {generalTodos.length === 0 && (
-            <p className="p-1 text-xs text-muted-foreground">Geen algemene to do&apos;s</p>
+          )}
+          {showStaffGeneral && (
+            <GeneralList
+              title="Voor medewerkers"
+              todos={generalStaffTodos}
+              emptyLabel="Geen algemene to do's"
+              onAdd={() => setSelection({ dateKey: null, todo: null, forStaff: true })}
+              onSelect={(todo) => setSelection({ dateKey: null, todo, forStaff: true })}
+              onToggle={handleToggle}
+            />
           )}
         </div>
       </div>
@@ -186,7 +287,7 @@ export function TodoBoard({
           dateKey={selection.dateKey}
           todo={selection.todo}
           staff={staff}
-          forStaff={forStaff}
+          defaultForStaff={selection.forStaff}
         />
       )}
     </div>
