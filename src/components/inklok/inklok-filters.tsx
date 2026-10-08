@@ -52,7 +52,7 @@ export function InklokFilters({
     if (value) params.set(key, value);
     else params.delete(key);
     if (key === "from" || key === "to") params.delete("week");
-    router.push(params.size > 0 ? `${pathname}?${params.toString()}` : pathname);
+    router.push(params.size > 0 ? `${pathname}?${params.toString()}` : pathname, { scroll: false });
   }
 
   function setRange(rangeFrom: string, rangeTo: string) {
@@ -60,7 +60,7 @@ export function InklokFilters({
     params.delete("week");
     params.set("from", rangeFrom);
     params.set("to", rangeTo);
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   function selectThisMonth() {
@@ -76,7 +76,7 @@ export function InklokFilters({
     params.delete("from");
     params.delete("to");
     params.set("week", value);
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   return (
@@ -171,7 +171,7 @@ export function InklokFilters({
         Deze maand
       </Button>
       {hasFilters && (
-        <Button type="button" variant="ghost" size="sm" onClick={() => router.push(pathname)}>
+        <Button type="button" variant="ghost" size="sm" onClick={() => router.push(pathname, { scroll: false })}>
           Filters wissen
         </Button>
       )}

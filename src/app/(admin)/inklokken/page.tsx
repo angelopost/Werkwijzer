@@ -61,15 +61,6 @@ export default async function InklokkenPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <InklokFilters
-        staff={staff.map((s) => ({ id: s.id, name: s.name }))}
-        weekStart={weekStart ? toDateKey(weekStart) : null}
-        weekLabel={formatWeekRangeLabel(weekStart ?? thisWeekStart)}
-        prevWeek={toDateKey(shiftWeek(weekStart ?? thisWeekStart, -1))}
-        nextWeek={toDateKey(shiftWeek(weekStart ?? thisWeekStart, 1))}
-        thisWeek={toDateKey(thisWeekStart)}
-      />
-
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground">Team</h2>
         <TeamStatus
@@ -83,6 +74,14 @@ export default async function InklokkenPage({
 
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground">Registraties</h2>
+        <InklokFilters
+          staff={staff.map((s) => ({ id: s.id, name: s.name }))}
+          weekStart={weekStart ? toDateKey(weekStart) : null}
+          weekLabel={formatWeekRangeLabel(weekStart ?? thisWeekStart)}
+          prevWeek={toDateKey(shiftWeek(weekStart ?? thisWeekStart, -1))}
+          nextWeek={toDateKey(shiftWeek(weekStart ?? thisWeekStart, 1))}
+          thisWeek={toDateKey(thisWeekStart)}
+        />
         <AdminTimeEntryLog
           entries={recentEntries.map((e) => ({
             id: e.id,
