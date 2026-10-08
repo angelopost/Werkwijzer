@@ -61,7 +61,7 @@ export default async function RoosterPage({
   const hasDraft = shifts.some((s) => s.status === "DRAFT");
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       <WorkshopBanner workshops={workshops} today={today} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

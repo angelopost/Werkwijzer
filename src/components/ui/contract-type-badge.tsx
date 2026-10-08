@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 const LABELS: Record<string, string> = {
@@ -16,15 +15,15 @@ export function ContractTypeBadge({
   if (!contractType) return null;
 
   return (
-    <Badge
+    <span
       className={cn(
-        "font-medium",
-        contractType === "VAST" && "bg-primary text-primary-foreground",
-        contractType === "NUL_UREN" && "bg-accent text-accent-foreground",
+        "inline-flex w-fit items-center rounded px-1.5 py-px text-[10px] leading-4 font-medium whitespace-nowrap",
+        contractType === "VAST" && "bg-primary/10 text-primary",
+        contractType === "NUL_UREN" && "bg-muted text-muted-foreground",
         className
       )}
     >
       {LABELS[contractType]}
-    </Badge>
+    </span>
   );
 }

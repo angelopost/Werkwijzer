@@ -128,21 +128,27 @@
     @apply font-sans;
   }
 
-  /* Alles in de app is in rem opgebouwd; op grote schermen schalen we daarom het hele
-   * programma mee, zodat het niet klein in het midden van een groot scherm staat. */
+  /* Alles in de app is in rem opgebouwd, dus met dit percentage zoomen we het hele
+   * programma iets uit (meer ruimte, meer informatie in beeld). Op heel grote
+   * schermen schalen we weer mee, zodat het niet klein in beeld staat. */
+  @media (min-width: 768px) {
+    html {
+      font-size: 87.5%;
+    }
+  }
   @media (min-width: 1800px) {
     html {
-      font-size: 112.5%;
+      font-size: 93.75%;
     }
   }
   @media (min-width: 2300px) {
     html {
-      font-size: 131.25%;
+      font-size: 112.5%;
     }
   }
   @media (min-width: 3000px) {
     html {
-      font-size: 156.25%;
+      font-size: 137.5%;
     }
   }
 }

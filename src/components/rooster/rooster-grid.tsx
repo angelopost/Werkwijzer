@@ -62,7 +62,7 @@ export function RoosterGrid({
 
   return (
     <div className="rounded-xl border bg-card">
-      {/* Mobiel: dagkiezer + één dag als lijst, zodat er niet gescrold hoeft te worden. */}
+      {/* Mobiel: dagkiezer + Ã©Ã©n dag als lijst, zodat er niet gescrold hoeft te worden. */}
       <div className="md:hidden">
         <div className="flex gap-1 overflow-x-auto border-b p-2">
           {days.map((day, index) => {
@@ -184,7 +184,7 @@ export function RoosterGrid({
                   return (
                     <td
                       key={dateKey}
-                      className={cn("border-r p-1.5 align-top last:border-r-0", today && "bg-primary/5")}
+                      className={cn("border-r p-1 align-top last:border-r-0", today && "bg-primary/5")}
                     >
                       <div className="group relative flex min-h-12 flex-col gap-1">
                         {leave && <LeaveBlock leave={leave} onClick={() => setSelectedLeave(leave)} />}

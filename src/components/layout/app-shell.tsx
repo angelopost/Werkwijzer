@@ -36,7 +36,7 @@ export function AppShell({
               </form>
             </div>
           </header>
-          <main className="min-w-0 flex-1 overflow-auto p-3 sm:p-6">{children}</main>
+          <main className="min-w-0 flex-1 overflow-auto p-3 sm:p-5">{children}</main>
         </div>
       </div>
     </div>

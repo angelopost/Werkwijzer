@@ -10,7 +10,7 @@ import type { LeavePeriod, ShiftItem } from "./types";
 const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
 const LEAVE_COLOR: Record<LeavePeriod["type"], string> = { VERLOF: "#d97706", ZIEK: "#ea580c" };
 
-/** Eén dienst als blok in de kleur van de medewerker: tijd bovenaan, duur eronder. */
+/** EÃ©n dienst als blok in de kleur van de medewerker: tijd bovenaan, duur eronder. */
 export function ShiftBlock({
   shift,
   colorIndex,
@@ -31,7 +31,7 @@ export function ShiftBlock({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full flex-col gap-0.5 rounded-md border-l-4 px-2 py-1.5 text-left shadow-xs transition-shadow hover:shadow-md",
+        "flex w-full flex-col gap-0.5 rounded-md border-l-4 px-2 py-1 text-left shadow-xs transition-shadow hover:shadow-md",
         staffPalette(colorIndex).block,
         draft && "opacity-65",
         className
@@ -42,7 +42,7 @@ export function ShiftBlock({
       </span>
       <span className="flex items-center gap-1 text-[11px] leading-tight whitespace-nowrap opacity-70">
         {formatDurationShort(shiftHours(start, end, shift.breakMinutes))}
-        {draft && " · Concept"}
+        {draft && " Â· Concept"}
         {shift.permanentShiftId && (
           <Repeat className="ml-auto size-3 shrink-0" strokeWidth={2.5} aria-label="Vast patroon" />
         )}
@@ -62,7 +62,7 @@ export function LeaveBlock({
   className?: string;
 }) {
   const classes = cn(
-    "flex w-full flex-col gap-0.5 rounded-md px-2 py-1.5 text-left text-white shadow-xs",
+    "flex w-full flex-col gap-0.5 rounded-md px-2 py-1 text-left text-white shadow-xs",
     onClick && "transition-shadow hover:shadow-md",
     className
   );
