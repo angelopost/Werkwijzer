@@ -13,25 +13,23 @@ function resolveAssigneeId(value: string | undefined): string | null {
   return value && value !== "algemeen" ? value : null;
 }
 
-/** De beheerderspagina toont alle to do's; het medewerkersscherm alleen die voor medewerkers. */
+/** Alleen de schermen verversen die de gewijzigde to do daadwerkelijk kunnen tonen,
+ * in plaats van altijd alle drie — scheelt onnodig herladen bij elke actie. */
 function revalidateTodoPaths(forStaff: boolean) {
-  revalidatePath("/todo");
   if (forStaff) {
+    revalidatePath("/todo-medewerkers");
     revalidatePath("/mijn-to-do");
+  } else {
+    revalidatePath("/todo");
   }
 }
 
-/** Zichtbaarheid uit het formulier: "medewerkers" = ook voor medewerkers, anders alleen beheerders. */
-function parseForStaff(formData: FormData): boolean {
-  return formData.get("visibility") === "medewerkers";
-}
-
 export async function createTodo(
+  forStaff: boolean,
   _prevState: TodoActionState,
   formData: FormData
 ): Promise<TodoActionState> {
   const admin = await requireAdmin();
-  const forStaff = parseForStaff(formData);
 
   const parsed = todoFormSchema.safeParse({
     title: formData.get("title"),
@@ -80,13 +78,11 @@ export async function createTodo(
 
 export async function updateTodo(
   todoId: string,
+  forStaff: boolean,
   _prevState: TodoActionState,
   formData: FormData
 ): Promise<TodoActionState> {
   const admin = await requireAdmin();
-  const existing = await prisma.todo.findUniqueOrThrow({ where: { id: todoId } });
-  // Hoort de to do bij een vast patroon, dan blijft de zichtbaarheid van het patroon gelden.
-  const forStaff = existing.permanentTodoId ? existing.forStaff : parseForStaff(formData);
 
   const parsed = todoFormSchema.safeParse({
     title: formData.get("title"),
@@ -110,7 +106,6 @@ export async function updateTodo(
       date,
       assigneeId: resolveAssigneeId(data.assigneeId),
       priority: data.priority,
-      forStaff,
       permanentGeneral: date === null && forStaff ? data.permanent : false,
     },
   });
@@ -129,8 +124,7 @@ export async function updateTodo(
     });
   }
 
-  // Bij een gewijzigde zichtbaarheid kan de to do net uit het medewerkersscherm verdwijnen.
-  revalidateTodoPaths(forStaff || existing.forStaff);
+  revalidateTodoPaths(forStaff);
   return { success: true };
 }
 

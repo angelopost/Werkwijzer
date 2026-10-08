@@ -13,8 +13,6 @@ export type TodoItem = {
   completedByName: string | null;
   permanentTodoId: string | null;
   permanentGeneral: boolean;
-  /** true = ook zichtbaar (en afvinkbaar) voor medewerkers, false = alleen beheerders. */
-  forStaff: boolean;
 };
 
 export type TodoStaffOption = {

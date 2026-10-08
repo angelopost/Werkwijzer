@@ -8,14 +8,25 @@ export type IconKey =
   | "todo"
   | "workshop";
 
-export type NavLink = { href: string; label: string; icon: IconKey };
+export type NavChild = { href: string; label: string };
+
+/** Een item met `children` is een uitklapbare groep (zonder eigen pagina). */
+export type NavLink = { href: string; label: string; icon: IconKey; children?: NavChild[] };
 
 export const ADMIN_NAV: NavLink[] = [
   { href: "/rooster", label: "Rooster", icon: "calendar" },
   { href: "/inklokken", label: "Inklokken", icon: "timer" },
   { href: "/medewerkers", label: "Medewerkers", icon: "users" },
   { href: "/uren", label: "Uren", icon: "clock" },
-  { href: "/todo", label: "To do", icon: "todo" },
+  {
+    href: "/todo",
+    label: "To do",
+    icon: "todo",
+    children: [
+      { href: "/todo-medewerkers", label: "To do medewerkers" },
+      { href: "/todo", label: "To do vaste kracht" },
+    ],
+  },
   { href: "/workshops", label: "Workshops", icon: "workshop" },
 ];
 

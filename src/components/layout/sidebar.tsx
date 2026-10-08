@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CalendarRange,
+  ChevronDown,
   CalendarDays,
   ClipboardCheck,
   Users,
@@ -16,7 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import type { IconKey, NavLink } from "./nav-links";
+import type { IconKey, NavChild, NavLink } from "./nav-links";
 
 const ICONS: Record<IconKey, LucideIcon> = {
   calendar: CalendarDays,
@@ -28,6 +30,67 @@ const ICONS: Record<IconKey, LucideIcon> = {
   todo: ListTodo,
   workshop: PartyPopper,
 };
+
+function isActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+/** Uitklapbaar menu-item (bv. To do) met een eigen lijstje opties eronder. Staat open zodra
+ * je op een van de onderliggende pagina's bent. */
+function NavGroup({
+  label,
+  icon: Icon,
+  items,
+  pathname,
+}: {
+  label: string;
+  icon: LucideIcon;
+  items: NavChild[];
+  pathname: string;
+}) {
+  const hasActiveChild = items.some((item) => isActive(pathname, item.href));
+  const [open, setOpen] = useState(hasActiveChild);
+  const expanded = open || hasActiveChild;
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen(!expanded)}
+        aria-expanded={expanded}
+        className={cn(
+          "flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+          hasActiveChild ? "text-white" : "text-zinc-300 hover:bg-white/10 hover:text-white"
+        )}
+      >
+        <Icon className="size-4" strokeWidth={2} />
+        {label}
+        <ChevronDown
+          className={cn("ml-auto size-4 transition-transform", expanded && "rotate-180")}
+          strokeWidth={2}
+        />
+      </button>
+      {expanded && (
+        <div className="mt-1 space-y-1 pl-4">
+          {items.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                isActive(pathname, item.href)
+                  ? "bg-primary text-primary-foreground"
+                  : "text-zinc-300 hover:bg-white/10 hover:text-white"
+              )}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Sidebar({
   links,
@@ -52,8 +115,15 @@ export function Sidebar({
       </div>
       <nav className="flex-1 space-y-1 px-3 py-2">
         {links.map((link) => {
-          const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
           const Icon = ICONS[link.icon];
+
+          if (link.children) {
+            return (
+              <NavGroup key={link.label} label={link.label} icon={Icon} items={link.children} pathname={pathname} />
+            );
+          }
+
+          const active = isActive(pathname, link.href);
           return (
             <Link
               key={link.href}
