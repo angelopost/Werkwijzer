@@ -71,7 +71,7 @@ export function MobileNav({
             type="button"
             variant="ghost"
             size="icon-sm"
-            className="absolute right-2 top-2"
+            className="absolute right-2 top-2 text-white hover:bg-white/10 hover:text-white"
             onClick={() => setOpen(false)}
             aria-label="Menu sluiten"
           >

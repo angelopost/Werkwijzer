@@ -43,12 +43,12 @@ export function Sidebar({
   const pathname = usePathname();
 
   return (
-    <aside className={cn("hidden w-64 shrink-0 flex-col bg-sidebar md:flex", className)}>
+    <aside className={cn("hidden w-64 shrink-0 flex-col bg-black text-white md:flex", className)}>
       <div className="flex h-16 items-center gap-2 px-5">
         <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <CalendarRange className="size-4.5" />
         </span>
-        <span className="text-lg font-semibold tracking-tight text-foreground">Werkwijzer</span>
+        <span className="text-lg font-semibold tracking-tight text-white">Werkwijzer</span>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-2">
         {links.map((link) => {
@@ -61,24 +61,21 @@ export function Sidebar({
               className={cn(
                 "relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 active
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-zinc-300 hover:bg-white/10 hover:text-white"
               )}
             >
-              {active && (
-                <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
-              )}
               <Icon className="size-4" strokeWidth={2} />
               {link.label}
             </Link>
           );
         })}
       </nav>
-      <div className="flex items-center gap-2.5 border-t border-sidebar-border p-4">
+      <div className="flex items-center gap-2.5 border-t border-white/15 p-4">
         <UserAvatar name={userName} />
         <div className="min-w-0 text-sm">
-          <p className="truncate font-medium text-foreground">{userName}</p>
-          <p className="truncate text-xs text-muted-foreground">{roleLabel}</p>
+          <p className="truncate font-medium text-white">{userName}</p>
+          <p className="truncate text-xs text-zinc-400">{roleLabel}</p>
         </div>
       </div>
     </aside>
