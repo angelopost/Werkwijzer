@@ -14,7 +14,7 @@ export function TeamStatus({ staff }: { staff: TeamStatusRow[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="grid gap-2 lg:grid-cols-2">
       {staff.map((member) => (
         <div key={member.id} className="flex items-center justify-between rounded-md border bg-card p-3">
           <div className="flex items-center gap-2.5">

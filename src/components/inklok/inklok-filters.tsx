@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,23 @@ function toInputDate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-export function InklokFilters({ staff }: { staff: { id: string; name: string }[] }) {
+/** weekStart = maandag (YYYY-MM-DD) van de getoonde week, of null als er geen weekfilter actief is
+ * (alle weken, of een eigen periode via Van/Tot). */
+export function InklokFilters({
+  staff,
+  weekStart,
+  weekLabel,
+  prevWeek,
+  nextWeek,
+  thisWeek,
+}: {
+  staff: { id: string; name: string }[];
+  weekStart: string | null;
+  weekLabel: string;
+  prevWeek: string;
+  nextWeek: string;
+  thisWeek: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -27,17 +44,20 @@ export function InklokFilters({ staff }: { staff: { id: string; name: string }[]
   const from = searchParams.get("from") ?? "";
   const to = searchParams.get("to") ?? "";
   const userId = searchParams.get("userId") ?? "";
-  const hasFilters = Boolean(from || to || userId);
+  const hasFilters = Boolean(from || to || userId || searchParams.get("week"));
+  const allWeeks = searchParams.get("week") === "alle";
 
   function setParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
     if (value) params.set(key, value);
     else params.delete(key);
+    if (key === "from" || key === "to") params.delete("week");
     router.push(params.size > 0 ? `${pathname}?${params.toString()}` : pathname);
   }
 
   function setRange(rangeFrom: string, rangeTo: string) {
     const params = new URLSearchParams(searchParams.toString());
+    params.delete("week");
     params.set("from", rangeFrom);
     params.set("to", rangeTo);
     router.push(`${pathname}?${params.toString()}`);
@@ -50,8 +70,62 @@ export function InklokFilters({ staff }: { staff: { id: string; name: string }[]
     setRange(toInputDate(first), toInputDate(last));
   }
 
+  /** Kiest een week (of "alle"); een eventuele eigen periode (Van/Tot) vervalt dan. */
+  function setWeek(value: string) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("from");
+    params.delete("to");
+    params.set("week", value);
+    router.push(`${pathname}?${params.toString()}`);
+  }
+
   return (
     <div className="flex flex-wrap items-end gap-3 rounded-xl border bg-card p-4">
+      <div className="flex flex-col gap-1.5">
+        <Label>Week</Label>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex h-8 items-center gap-1 rounded-lg border bg-background px-1">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Vorige week"
+              onClick={() => setWeek(weekStart ? prevWeek : thisWeek)}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span className="flex min-w-36 items-center justify-center gap-1.5 px-1 text-sm font-medium whitespace-nowrap">
+              <CalendarDays className="size-3.5 text-muted-foreground" />
+              {weekStart ? weekLabel : allWeeks ? "Alle weken" : "Eigen periode"}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Volgende week"
+              onClick={() => setWeek(weekStart ? nextWeek : thisWeek)}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+          <Button
+            type="button"
+            variant={weekStart === thisWeek ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setWeek(thisWeek)}
+          >
+            Deze week
+          </Button>
+          <Button
+            type="button"
+            variant={allWeeks ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setWeek("alle")}
+          >
+            Alle weken
+          </Button>
+        </div>
+      </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="filterFrom">Van</Label>
         <Input
