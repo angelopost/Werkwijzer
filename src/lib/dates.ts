@@ -77,6 +77,11 @@ export function formatDayLabel(date: Date): string {
   return `${weekday} ${date.getUTCDate()} ${MONTH_LABELS[date.getUTCMonth()]}`;
 }
 
+/** Volledige datum inclusief jaar, bv. "wo 17 sep 2026". */
+export function formatDateWithYear(date: Date): string {
+  return `${formatDayLabel(date)} ${date.getUTCFullYear()}`;
+}
+
 export function getWeekdayShort(date: Date): string {
   return WEEKDAY_LABELS[(date.getUTCDay() + 6) % 7].toUpperCase();
 }

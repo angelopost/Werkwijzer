@@ -298,6 +298,42 @@ model PermanentTodoException {
   @@unique([permanentTodoId, date])
 }
 
+enum WorkshopStatus {
+  OPEN
+  REMINDER
+  AFGEHANDELD
+}
+
+/// Workshop/teamuitje dat door de beheerder wordt opgevolgd (alleen beheerders).
+model Workshop {
+  id               String         @id @default(cuid())
+  name             String
+  date             DateTime       @db.Date
+  notes            String?        // "Bijzonderheden", bv. alleen op maandag
+  paymentLinkSent  Boolean        @default(false)
+  paid             Boolean        @default(false)
+  status           WorkshopStatus @default(OPEN)
+
+  actions          WorkshopAction[]
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([date])
+}
+
+/// Eén opvolgactie met datum, bv. "18 sep: opnieuw gebeld".
+model WorkshopAction {
+  id          String   @id @default(cuid())
+  workshopId  String
+  workshop    Workshop @relation(fields: [workshopId], references: [id], onDelete: Cascade)
+  date        DateTime @db.Date
+  description String
+  createdAt   DateTime @default(now())
+
+  @@index([workshopId, date])
+}
+
 model Notification {
   id        String           @id @default(cuid())
   userId    String

@@ -11,6 +11,7 @@ import {
   FileText,
   Timer,
   ListTodo,
+  PartyPopper,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ const ICONS: Record<IconKey, LucideIcon> = {
   file: FileText,
   timer: Timer,
   todo: ListTodo,
+  workshop: PartyPopper,
 };
 
 export function Sidebar({
