@@ -7,6 +7,7 @@ import { parseDateKey } from "@/lib/dates";
 import {
   workshopActionSchema,
   workshopCreateSchema,
+  workshopStatusSchema,
   workshopUpdateSchema,
 } from "@/lib/validation/workshop";
 
@@ -49,9 +50,6 @@ export async function updateWorkshop(
   const parsed = workshopUpdateSchema.safeParse({
     name: formData.get("name"),
     date: formData.get("date"),
-    status: formData.get("status"),
-    paymentLinkSent: formData.get("paymentLinkSent"),
-    paid: formData.get("paid"),
     notes: formData.get("notes") || undefined,
   });
   if (!parsed.success) {
@@ -64,15 +62,26 @@ export async function updateWorkshop(
     data: {
       name: data.name,
       date: parseDateKey(data.date),
-      status: data.status,
-      paymentLinkSent: data.paymentLinkSent === "ja",
-      paid: data.paid === "ja",
       notes: data.notes?.trim() || null,
     },
   });
 
   revalidateWorkshop(workshopId);
   return { success: true };
+}
+
+export async function updateWorkshopStatus(
+  workshopId: string,
+  patch: { status?: "OPEN" | "REMINDER" | "AFGEHANDELD"; paymentLinkSent?: boolean; paid?: boolean }
+): Promise<{ error?: string } | undefined> {
+  await requireAdmin();
+
+  const parsed = workshopStatusSchema.safeParse(patch);
+  if (!parsed.success) return { error: "Ongeldige status" };
+
+  await prisma.workshop.update({ where: { id: workshopId }, data: parsed.data });
+
+  revalidateWorkshop(workshopId);
 }
 
 export async function deleteWorkshop(workshopId: string) {
