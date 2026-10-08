@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
   formatDayLabel,
-  formatTime,
   getMonthShort,
   getWeekDays,
   getWeekdayShort,
@@ -14,10 +13,9 @@ import {
 import { cn } from "@/lib/utils";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { StaffShiftDialog } from "./staff-shift-dialog";
+import { LeaveBlock, ShiftBlock } from "./shift-block";
+import { staffPalette } from "./staff-colors";
 import type { LeavePeriod, ShiftItem, StaffRow } from "./types";
-
-const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
-const LEAVE_COLOR: Record<LeavePeriod["type"], string> = { VERLOF: "#d97706", ZIEK: "#ea580c" };
 
 export function StaffWeekGrid({
   weekStartKey,
@@ -90,26 +88,21 @@ export function StaffWeekGrid({
             if (cellShifts.length === 0 && !leave) return null;
             return (
               <div key={member.id} className="flex items-center gap-2 p-2.5">
-                <UserAvatar name={member.name} className="shrink-0" />
+                <UserAvatar
+                  name={member.name}
+                  colorClass={staffPalette(member.colorIndex).avatar}
+                  className="shrink-0"
+                />
                 <span className="min-w-0 flex-1 truncate text-sm font-medium">{member.name}</span>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  {leave && (
-                    <div
-                      className="rounded-lg px-2 py-1 text-xs font-medium text-white shadow-sm"
-                      style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
-                    >
-                      {LEAVE_LABEL[leave.type]}
-                    </div>
-                  )}
+                <div className="flex w-36 shrink-0 flex-col items-stretch gap-1">
+                  {leave && <LeaveBlock leave={leave} />}
                   {cellShifts.map((shift) => (
-                    <button
+                    <ShiftBlock
                       key={shift.id}
-                      type="button"
+                      shift={shift}
+                      colorIndex={member.colorIndex}
                       onClick={() => setSelectedShift(shift)}
-                      className="rounded-lg bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground shadow-sm"
-                    >
-                      {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
-                    </button>
+                    />
                   ))}
                 </div>
               </div>
@@ -137,7 +130,7 @@ export function StaffWeekGrid({
                     key={day.toISOString()}
                     className={cn(
                       "min-w-[128px] border-r p-2 text-left align-top last:border-r-0",
-                      today && "bg-accent/50"
+                      today && "bg-primary/5"
                     )}
                   >
                     <div className="text-[11px] font-semibold tracking-wide text-muted-foreground">
@@ -157,7 +150,7 @@ export function StaffWeekGrid({
               <tr key={member.id} className="border-b last:border-b-0">
                 <td className="border-r p-2 align-top">
                   <div className="flex items-center gap-2">
-                    <UserAvatar name={member.name} />
+                    <UserAvatar name={member.name} colorClass={staffPalette(member.colorIndex).avatar} />
                     <span className="font-medium">{member.name}</span>
                   </div>
                 </td>
@@ -169,28 +162,17 @@ export function StaffWeekGrid({
                   return (
                     <td
                       key={dateKey}
-                      className={cn("border-r p-1 align-top last:border-r-0", today && "bg-accent/15")}
+                      className={cn("border-r p-1.5 align-top last:border-r-0", today && "bg-primary/5")}
                     >
-                      <div className="flex flex-col gap-0.5">
-                        {leave && (
-                          <div
-                            className="rounded-lg px-2 py-1 text-xs font-medium text-white shadow-sm"
-                            style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
-                          >
-                            {LEAVE_LABEL[leave.type]}
-                          </div>
-                        )}
+                      <div className="flex min-h-12 flex-col gap-1">
+                        {leave && <LeaveBlock leave={leave} />}
                         {cellShifts.map((shift) => (
-                          <button
+                          <ShiftBlock
                             key={shift.id}
-                            type="button"
+                            shift={shift}
+                            colorIndex={member.colorIndex}
                             onClick={() => setSelectedShift(shift)}
-                            className="w-full rounded-lg bg-primary px-2 py-1 text-left text-primary-foreground shadow-sm transition-transform hover:-translate-y-px"
-                          >
-                            <div className="text-xs font-semibold">
-                              {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
-                            </div>
-                          </button>
+                          />
                         ))}
                       </div>
                     </td>

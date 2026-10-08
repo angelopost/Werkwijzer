@@ -25,12 +25,21 @@ function initialsFor(name: string): string {
     .toUpperCase();
 }
 
-export function UserAvatar({ name, className }: { name: string; className?: string }) {
+export function UserAvatar({
+  name,
+  className,
+  colorClass,
+}: {
+  name: string;
+  className?: string;
+  /** Eigen kleurklassen (bv. de kleur van de medewerker in het rooster). */
+  colorClass?: string;
+}) {
   return (
     <span
       className={cn(
         "flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
-        paletteFor(name),
+        colorClass ?? paletteFor(name),
         className
       )}
     >

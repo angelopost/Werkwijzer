@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Plus, Repeat } from "lucide-react";
+import { Plus } from "lucide-react";
 import {
-  formatTime,
   getMonthShort,
   getWeekDays,
   getWeekdayShort,
@@ -17,10 +16,9 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { ContractTypeBadge } from "@/components/ui/contract-type-badge";
 import { ShiftDialog } from "./shift-dialog";
 import { LeaveDialog } from "./leave-dialog";
+import { LeaveBlock, ShiftBlock } from "./shift-block";
+import { staffPalette } from "./staff-colors";
 import type { LeavePeriod, ShiftItem, StaffRow } from "./types";
-
-const LEAVE_LABEL: Record<LeavePeriod["type"], string> = { VERLOF: "Verlof", ZIEK: "Ziek" };
-const LEAVE_COLOR: Record<LeavePeriod["type"], string> = { VERLOF: "#d97706", ZIEK: "#ea580c" };
 
 export function RoosterGrid({
   weekStartKey,
@@ -99,41 +97,30 @@ export function RoosterGrid({
             const leave = leaveFor(member.id, mobileDateKey);
             return (
               <div key={member.id} className="flex items-center gap-2 p-2.5">
-                <UserAvatar name={member.name} className="shrink-0" />
+                <UserAvatar
+                  name={member.name}
+                  colorClass={staffPalette(member.colorIndex).avatar}
+                  className="shrink-0"
+                />
                 <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="truncate text-sm font-medium">{member.name}</span>
                   <ContractTypeBadge contractType={member.contractType ?? null} />
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  {leave && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedLeave(leave)}
-                      className="rounded-lg px-2 py-1 text-xs font-medium text-white shadow-sm"
-                      style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
-                    >
-                      {LEAVE_LABEL[leave.type]}
-                    </button>
-                  )}
+                <div className="flex w-36 shrink-0 flex-col items-stretch gap-1">
+                  {leave && <LeaveBlock leave={leave} onClick={() => setSelectedLeave(leave)} />}
                   {cellShifts.map((shift) => (
-                    <button
+                    <ShiftBlock
                       key={shift.id}
-                      type="button"
+                      shift={shift}
+                      colorIndex={member.colorIndex}
                       onClick={() => setSelection({ staffId: member.id, dateKey: mobileDateKey, shift })}
-                      className={cn(
-                        "flex items-center gap-1 rounded-lg bg-primary px-2 py-1 text-xs font-semibold text-primary-foreground shadow-sm",
-                        shift.status === "DRAFT" && "opacity-55"
-                      )}
-                    >
-                      {shift.permanentShiftId && <Repeat className="size-3 shrink-0" strokeWidth={2.5} />}
-                      {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
-                    </button>
+                    />
                   ))}
                   {!leave && cellShifts.length === 0 && (
                     <button
                       type="button"
                       onClick={() => setSelection({ staffId: member.id, dateKey: mobileDateKey, shift: null })}
-                      className="flex size-8 items-center justify-center rounded-lg border border-dashed text-muted-foreground hover:bg-accent/40"
+                      className="flex size-8 items-center justify-center self-end rounded-lg border border-dashed text-muted-foreground hover:bg-accent/40"
                     >
                       <Plus className="size-4" strokeWidth={2} />
                     </button>
@@ -160,7 +147,7 @@ export function RoosterGrid({
                     key={day.toISOString()}
                     className={cn(
                       "min-w-[128px] border-r p-2 text-left align-top last:border-r-0",
-                      today && "bg-accent/50"
+                      today && "bg-primary/5"
                     )}
                   >
                     <div className="text-[11px] font-semibold tracking-wide text-muted-foreground">
@@ -180,7 +167,7 @@ export function RoosterGrid({
               <tr key={member.id} className="border-b last:border-b-0">
                 <td className="border-r p-2 align-top">
                   <div className="flex items-center gap-2">
-                    <UserAvatar name={member.name} />
+                    <UserAvatar name={member.name} colorClass={staffPalette(member.colorIndex).avatar} />
                     <div className="flex min-w-0 flex-col gap-0.5">
                       <span className="truncate font-medium">{member.name}</span>
                       <ContractTypeBadge contractType={member.contractType ?? null} />
@@ -192,46 +179,43 @@ export function RoosterGrid({
                   const cellShifts = shiftsByCell.get(`${member.id}_${dateKey}`) ?? [];
                   const leave = leaveFor(member.id, dateKey);
                   const today = isToday(day);
+                  const isEmpty = cellShifts.length === 0 && !leave;
+                  const addShift = () => setSelection({ staffId: member.id, dateKey, shift: null });
                   return (
                     <td
                       key={dateKey}
-                      className={cn("border-r p-1 align-top last:border-r-0", today && "bg-accent/15")}
+                      className={cn("border-r p-1.5 align-top last:border-r-0", today && "bg-primary/5")}
                     >
-                      {leave && (
-                        <button
-                          type="button"
-                          onClick={() => setSelectedLeave(leave)}
-                          className="mb-0.5 w-full rounded-lg px-2 py-1 text-left text-xs font-medium text-white shadow-sm transition-transform hover:-translate-y-px"
-                          style={{ backgroundColor: LEAVE_COLOR[leave.type] }}
-                        >
-                          {LEAVE_LABEL[leave.type]}
-                        </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setSelection({ staffId: member.id, dateKey, shift: null })}
-                        className="mb-0.5 flex min-h-8 w-full items-center justify-center rounded-lg border border-dashed border-transparent text-muted-foreground hover:border-border hover:bg-accent/40"
-                      >
-                        {cellShifts.length === 0 && <Plus className="size-4" strokeWidth={2} />}
-                      </button>
-                      <div className="flex flex-col gap-0.5">
+                      <div className="group relative flex min-h-12 flex-col gap-1">
+                        {leave && <LeaveBlock leave={leave} onClick={() => setSelectedLeave(leave)} />}
                         {cellShifts.map((shift) => (
-                          <button
+                          <ShiftBlock
                             key={shift.id}
-                            type="button"
+                            shift={shift}
+                            colorIndex={member.colorIndex}
                             onClick={() => setSelection({ staffId: member.id, dateKey, shift })}
-                            className={cn(
-                              "w-full rounded-lg bg-primary px-2 py-1 text-left text-primary-foreground shadow-sm transition-transform hover:-translate-y-px",
-                              shift.status === "DRAFT" && "opacity-55"
-                            )}
-                          >
-                            <div className="flex items-center gap-1 text-xs font-semibold">
-                              {shift.permanentShiftId && <Repeat className="size-3 shrink-0" strokeWidth={2.5} />}
-                              {formatTime(new Date(shift.startTime))} - {formatTime(new Date(shift.endTime))}
-                            </div>
-                            {shift.status === "DRAFT" && <div className="text-xs opacity-90">Concept</div>}
-                          </button>
+                          />
                         ))}
+
+                        {isEmpty ? (
+                          <button
+                            type="button"
+                            onClick={addShift}
+                            aria-label="Dienst toevoegen"
+                            className="flex min-h-12 w-full flex-1 items-center justify-center rounded-md border border-dashed border-transparent text-muted-foreground/60 transition-colors hover:border-border hover:bg-accent/40 hover:text-foreground"
+                          >
+                            <Plus className="size-4" strokeWidth={2} />
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={addShift}
+                            aria-label="Nog een dienst toevoegen"
+                            className="absolute right-0.5 bottom-0.5 flex size-5 items-center justify-center rounded-full border bg-background text-muted-foreground opacity-0 shadow-xs transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+                          >
+                            <Plus className="size-3" strokeWidth={2.5} />
+                          </button>
+                        )}
                       </div>
                     </td>
                   );

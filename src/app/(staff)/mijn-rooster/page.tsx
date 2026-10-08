@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getAmsterdamToday, getWeekDays, getWeekStart, parseDateKey, toDateKey } from "@/lib/dates";
+import { getStaffColorIndexes } from "@/lib/staff-colors";
 import { StaffWeekGrid } from "@/components/rooster/staff-week-grid";
 import { WeekNav } from "@/components/layout/week-nav";
 
@@ -15,7 +16,8 @@ export default async function MijnRoosterPage({
   const from = days[0];
   const to = days[6];
 
-  const [staff, shifts, leaveRequests] = await Promise.all([
+  const [colorIndexes, staff, shifts, leaveRequests] = await Promise.all([
+    getStaffColorIndexes(),
     prisma.user.findMany({
       where: { role: "STAFF", isActive: true },
       orderBy: [{ contractType: { sort: "desc", nulls: "last" } }, { name: "asc" }],
@@ -34,7 +36,7 @@ export default async function MijnRoosterPage({
 
       <StaffWeekGrid
         weekStartKey={weekStartKey}
-        staff={staff.map((s) => ({ id: s.id, name: s.name }))}
+        staff={staff.map((s) => ({ id: s.id, name: s.name, colorIndex: colorIndexes.get(s.id) ?? 0 }))}
         shifts={shifts.map((s) => ({
           id: s.id,
           date: toDateKey(s.date),

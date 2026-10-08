@@ -2,6 +2,8 @@ export type StaffRow = {
   id: string;
   name: string;
   contractType?: "VAST" | "NUL_UREN" | null;
+  /** Vaste plek voor de eigen kleur van deze medewerker (zie staff-colors). */
+  colorIndex: number;
 };
 
 export type ShiftItem = {

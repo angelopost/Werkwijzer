@@ -8,6 +8,7 @@ import {
   toDateKey,
 } from "@/lib/dates";
 import { materializePermanentShiftsForWeek } from "@/lib/permanent-shifts";
+import { getStaffColorIndexes } from "@/lib/staff-colors";
 import { RoosterGrid } from "@/components/rooster/rooster-grid";
 import { WorkshopBanner } from "@/components/workshops/workshop-banner";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,8 @@ export default async function RoosterPage({
     ...(weekContainsToday ? [{ date: { gte: today, lte: addUTCDays(today, 1) } }] : []),
   ];
 
-  const [staff, shifts, leaveRequests, workshops] = await Promise.all([
+  const [colorIndexes, staff, shifts, leaveRequests, workshops] = await Promise.all([
+    getStaffColorIndexes(),
     prisma.user.findMany({
       where: { role: "STAFF", isActive: true },
       orderBy: [{ contractType: { sort: "desc", nulls: "last" } }, { name: "asc" }],
@@ -77,6 +79,7 @@ export default async function RoosterPage({
           id: s.id,
           name: s.name,
           contractType: s.contractType,
+          colorIndex: colorIndexes.get(s.id) ?? 0,
         }))}
         shifts={shifts.map((s) => ({
           id: s.id,

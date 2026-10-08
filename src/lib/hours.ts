@@ -38,6 +38,16 @@ export function formatDuration(hours: number): string {
   return `${h} uur en ${m} ${minutesLabel}`;
 }
 
+/** Korte duur voor in smalle roostervakjes, bv. "8 u" of "8 u 30 min". */
+export function formatDurationShort(hours: number): string {
+  const totalMinutes = Math.round(hours * 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (h === 0) return `${m} min`;
+  if (m === 0) return `${h} u`;
+  return `${h} u ${m} min`;
+}
+
 export function durationHours(start: Date, end: Date): number {
   return Math.max(0, (end.getTime() - start.getTime()) / 3_600_000);
 }
