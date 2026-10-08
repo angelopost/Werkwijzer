@@ -10,7 +10,7 @@ export default async function WorkshopDetailPage({ params }: { params: Promise<{
 
   const workshop = await prisma.workshop.findUnique({
     where: { id },
-    include: { actions: { orderBy: [{ date: "asc" }, { createdAt: "asc" }] } },
+    include: { actions: { orderBy: [{ date: "desc" }, { createdAt: "desc" }] } },
   });
   if (!workshop) notFound();
 
