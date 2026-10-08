@@ -9,6 +9,7 @@ import {
   workshopCreateSchema,
   workshopNotesSchema,
   workshopStatusSchema,
+  workshopTimeSchema,
 } from "@/lib/validation/workshop";
 
 export type WorkshopActionState = { error?: string; success?: boolean; id?: string } | undefined;
@@ -75,6 +76,27 @@ export async function updateWorkshopStatus(
   await prisma.workshop.update({ where: { id: workshopId }, data: parsed.data });
 
   revalidateWorkshop(workshopId);
+}
+
+export async function updateWorkshopTime(
+  workshopId: string,
+  times: { startTime: string; endTime: string }
+): Promise<{ error?: string } | undefined> {
+  await requireAdmin();
+
+  const parsed = workshopTimeSchema.safeParse(times);
+  if (!parsed.success) return { error: "Ongeldige tijd" };
+
+  await prisma.workshop.update({
+    where: { id: workshopId },
+    data: {
+      startTime: parsed.data.startTime || null,
+      endTime: parsed.data.endTime || null,
+    },
+  });
+
+  revalidateWorkshop(workshopId);
+  revalidatePath("/rooster");
 }
 
 export async function deleteWorkshop(workshopId: string) {

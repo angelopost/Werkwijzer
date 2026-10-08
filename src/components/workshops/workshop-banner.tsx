@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { ChevronRight, PartyPopper } from "lucide-react";
 import { addUTCDays, formatDayLabel, toDateKey } from "@/lib/dates";
+import { formatWorkshopTime } from "./types";
 
-type BannerWorkshop = { id: string; name: string; date: Date };
+type BannerWorkshop = {
+  id: string;
+  name: string;
+  date: Date;
+  startTime: string | null;
+  endTime: string | null;
+};
 
 function relativeLabel(date: Date, today: Date): string {
   const key = toDateKey(date);
@@ -31,7 +38,15 @@ export function WorkshopBanner({ workshops, today }: { workshops: BannerWorkshop
             <span className="text-xs font-semibold tracking-wide text-amber-800 uppercase dark:text-amber-300">
               Workshop {relativeLabel(workshop.date, today)}
             </span>
-            <span className="truncate text-sm font-semibold">{workshop.name}</span>
+            <span className="truncate text-sm font-semibold">
+              {workshop.name}
+              {formatWorkshopTime(workshop.startTime, workshop.endTime) && (
+                <span className="font-normal text-amber-900/70 dark:text-amber-200/70">
+                  {" · "}
+                  {formatWorkshopTime(workshop.startTime, workshop.endTime)}
+                </span>
+              )}
+            </span>
           </div>
           <ChevronRight className="size-4 shrink-0 text-amber-800/70 transition-transform group-hover:translate-x-0.5 dark:text-amber-300/70" />
         </Link>

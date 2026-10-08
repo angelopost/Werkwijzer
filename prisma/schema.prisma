@@ -309,6 +309,8 @@ model Workshop {
   id               String         @id @default(cuid())
   name             String
   date             DateTime       @db.Date
+  startTime        String?        // "HH:mm", optioneel
+  endTime          String?        // "HH:mm", optioneel
   notes            String?        // "Bijzonderheden", bv. alleen op maandag
   paymentLinkSent  Boolean        @default(false)
   paid             Boolean        @default(false)

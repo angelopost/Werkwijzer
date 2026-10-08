@@ -53,7 +53,7 @@ export default async function RoosterPage({
     }),
     prisma.workshop.findMany({
       where: { OR: workshopDateFilters },
-      select: { id: true, name: true, date: true },
+      select: { id: true, name: true, date: true, startTime: true, endTime: true },
       orderBy: [{ date: "asc" }, { createdAt: "asc" }],
     }),
   ]);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,11 +13,17 @@ import {
   deleteWorkshopAction,
   updateWorkshopNotes,
   updateWorkshopStatus,
+  updateWorkshopTime,
   type WorkshopActionState,
 } from "@/app/(admin)/workshops/actions";
 import { DeleteWorkshopButton } from "./delete-workshop-button";
 import { WorkshopStatusBadges } from "./status-badges";
-import { WORKSHOP_STATUS_LABEL, type WorkshopDetailData, type WorkshopStatus } from "./types";
+import {
+  WORKSHOP_STATUS_LABEL,
+  formatWorkshopTime,
+  type WorkshopDetailData,
+  type WorkshopStatus,
+} from "./types";
 
 type Tone = "green" | "amber" | "neutral";
 
@@ -66,6 +72,60 @@ function ChoiceGroup<T extends string>({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/** Begin- en eindtijd van de workshop; wordt vanzelf opgeslagen kort nadat je iets aanpast. */
+function TimeRow({ workshop }: { workshop: WorkshopDetailData }) {
+  const [times, setTimes] = useState({ start: workshop.startTime ?? "", end: workshop.endTime ?? "" });
+  const saved = useRef(times);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (times.start === saved.current.start && times.end === saved.current.end) return;
+    const timer = setTimeout(() => {
+      startTransition(async () => {
+        const result = await updateWorkshopTime(workshop.id, {
+          startTime: times.start,
+          endTime: times.end,
+        });
+        if (result?.error) {
+          setError(result.error);
+        } else {
+          saved.current = times;
+          setError(null);
+        }
+      });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [times, workshop.id]);
+
+  return (
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+      <div className="flex flex-col">
+        <span className="text-sm font-medium">Tijd van de workshop</span>
+        <span className="text-xs text-muted-foreground">{saving ? "Opslaan…" : "Van hoelaat tot hoelaat"}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <Input
+          type="time"
+          aria-label="Begintijd"
+          value={times.start}
+          onChange={(e) => setTimes((t) => ({ ...t, start: e.target.value }))}
+          className="block w-full sm:w-32"
+        />
+        <span className="text-sm text-muted-foreground">tot</span>
+        <Input
+          type="time"
+          aria-label="Eindtijd"
+          value={times.end}
+          onChange={(e) => setTimes((t) => ({ ...t, end: e.target.value }))}
+          className="block w-full sm:w-32"
+        />
+      </div>
+      {error && <p className="text-sm text-destructive sm:basis-full">{error}</p>}
     </div>
   );
 }
@@ -132,6 +192,7 @@ function FollowUpCard({ workshop }: { workshop: WorkshopDetailData }) {
             { value: "nee", label: "Nee", tone: "neutral" },
           ]}
         />
+        <TimeRow workshop={workshop} />
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
@@ -266,7 +327,11 @@ export function WorkshopDetail({
     <div className="flex max-w-3xl flex-col gap-4">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold tracking-tight">{workshop.name}</h2>
-        <p className="text-sm text-muted-foreground">{workshop.dateLabel}</p>
+        <p className="text-sm text-muted-foreground">
+          {workshop.dateLabel}
+          {formatWorkshopTime(workshop.startTime, workshop.endTime) &&
+            ` · ${formatWorkshopTime(workshop.startTime, workshop.endTime)}`}
+        </p>
       </div>
 
       <FollowUpCard workshop={workshop} />

@@ -31,6 +31,8 @@ export default async function WorkshopDetailPage({ params }: { params: Promise<{
           name: workshop.name,
           dateKey: toDateKey(workshop.date),
           dateLabel: formatDateWithYear(workshop.date),
+          startTime: workshop.startTime,
+          endTime: workshop.endTime,
           notes: workshop.notes,
           paymentLinkSent: workshop.paymentLinkSent,
           paid: workshop.paid,

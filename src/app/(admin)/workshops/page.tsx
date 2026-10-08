@@ -4,12 +4,14 @@ import { prisma } from "@/lib/db";
 import { formatDateWithYear, getAmsterdamToday, getMonthShort } from "@/lib/dates";
 import { WorkshopAddDialog } from "@/components/workshops/workshop-add-dialog";
 import { WorkshopStatusBadges } from "@/components/workshops/status-badges";
-import type { WorkshopStatus } from "@/components/workshops/types";
+import { formatWorkshopTime, type WorkshopStatus } from "@/components/workshops/types";
 
 type WorkshopRow = {
   id: string;
   name: string;
   date: Date;
+  startTime: string | null;
+  endTime: string | null;
   status: WorkshopStatus;
   paymentLinkSent: boolean;
   paid: boolean;
@@ -34,7 +36,11 @@ function WorkshopList({ rows }: { rows: WorkshopRow[] }) {
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <div className="flex flex-col">
               <span className="truncate font-semibold">{workshop.name}</span>
-              <span className="text-xs text-muted-foreground">{formatDateWithYear(workshop.date)}</span>
+              <span className="text-xs text-muted-foreground">
+                {formatDateWithYear(workshop.date)}
+                {formatWorkshopTime(workshop.startTime, workshop.endTime) &&
+                  ` · ${formatWorkshopTime(workshop.startTime, workshop.endTime)}`}
+              </span>
             </div>
             <WorkshopStatusBadges
               status={workshop.status}
@@ -65,7 +71,16 @@ function Section({ title, count, children }: { title: string; count: number; chi
 export default async function WorkshopsPage() {
   const today = getAmsterdamToday();
   const workshops = await prisma.workshop.findMany({
-    select: { id: true, name: true, date: true, status: true, paymentLinkSent: true, paid: true },
+    select: {
+      id: true,
+      name: true,
+      date: true,
+      startTime: true,
+      endTime: true,
+      status: true,
+      paymentLinkSent: true,
+      paid: true,
+    },
     orderBy: [{ date: "asc" }, { createdAt: "asc" }],
   });
 

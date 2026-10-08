@@ -16,6 +16,14 @@ export const workshopStatusSchema = z.object({
   paid: z.boolean().optional(),
 });
 
+const timeValue = z.union([z.literal(""), z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/)]);
+
+/** Begin- en eindtijd (HH:mm) van de workshop; allebei optioneel. */
+export const workshopTimeSchema = z.object({
+  startTime: timeValue,
+  endTime: timeValue,
+});
+
 export const workshopActionSchema = z.object({
   date: z.string().min(1, { error: "Datum is verplicht" }),
   description: z.string().trim().min(1, { error: "Omschrijving is verplicht" }).max(1000),
